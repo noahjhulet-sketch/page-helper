@@ -18,7 +18,7 @@ Status: ✅ done · 🔨 in progress · ⏳ next · 💤 later
 - [x] `npm run smoke-test` screenshot check
 - [x] **Checkpoint** passed
 
-## Phase 2: Snip → answer 🔨
+## Phase 2: Snip → answer ✅
 - [x] Hotkey or click freezes every monitor; drag a box on the still image (Esc cancels)
 - [x] Menu next to the box: Summarize · Explain · Blanks · Sources · Ask (with a question box)
 - [x] Answer streams into a bubble beside the buddy, with a thumbnail of the snip, Copy and Close
@@ -27,9 +27,9 @@ Status: ✅ done · 🔨 in progress · ⏳ next · 💤 later
 - [x] Multi-monitor and display-scaling aware; snips are scaled to Claude's 2576px limit
 - [x] API calls moved to the official Anthropic SDK
 - [x] The box you draw is the preview: only that region is sent
-- [ ] **Checkpoint:** every tool works on real content, on every monitor
+- [x] **Checkpoint** passed (tested on Haiku)
 
-## Phase 3: Clipboard and chat
+## Phase 3: Clipboard and chat ⏳
 - Clipboard hotkey (text or image)
 - Expand a bubble into a chat panel for follow-ups
 - Session history stored only on this PC, with "clear all"
