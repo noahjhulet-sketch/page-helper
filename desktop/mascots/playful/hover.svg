@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- playful mascot, hover. Drawn by scripts/draw-mascots.mjs -->
+  <path d="M50 8 L66.5 31.3 L93.7 39.8 L76.6 62.7 L77 91.2 L50 82 L23 91.2 L23.4 62.7 L6.3 39.8 L33.5 31.3 Z"
+        fill="#FFB020" stroke="#FFB020" stroke-width="8" stroke-linejoin="round"/>
+  <circle cx="31" cy="61" r="4" fill="#FF7A59" opacity="0.6"/>
+  <circle cx="69" cy="61" r="4" fill="#FF7A59" opacity="0.6"/>
+  <path d="M34 53 q6 -8 12 0" stroke="#3A2200" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M54 53 q6 -8 12 0" stroke="#3A2200" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M42 61 q8 11.200000000000001 16 0 Z" fill="#5A2A00" stroke="#5A2A00" stroke-width="2" stroke-linejoin="round"/>
+</svg>

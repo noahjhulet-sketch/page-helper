@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld("buddy", {
   currentMascot: () => ipcRenderer.invoke("mascot:current"),
   onMascot: (fn) => ipcRenderer.on("mascot:set", (_e, mascot) => fn(mascot)),
   onState: (fn) => ipcRenderer.on("mascot:state", (_e, state) => fn(state)),
+  onMoved: (fn) => ipcRenderer.on("mascot:moved", (_e, step) => fn(step)),
   ignoreMouse: (ignore) => ipcRenderer.send("mascot:ignore-mouse", ignore),
   dragStart: (offset) => ipcRenderer.send("mascot:drag-start", offset),
   dragEnd: () => ipcRenderer.send("mascot:drag-end"),

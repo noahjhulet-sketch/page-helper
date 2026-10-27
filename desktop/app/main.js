@@ -288,6 +288,7 @@ if (!isOnlyCopy) {
         mascotWindow,
         mascots: listMascots(),
         chooseMascot,
+        setMascotState,
         snipScreen,
         useClipboard,
         newChat,

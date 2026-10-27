@@ -107,11 +107,16 @@ function startDrag({ offsetX, offsetY }) {
   clearInterval(dragTimer);
   // Follow the cursor itself rather than the window's mouse events, which stop
   // when a fast drag outruns the window.
+  let last = win.getBounds();
   dragTimer = setInterval(() => {
     const p = screen.getCursorScreenPoint();
+    const next = { x: p.x - offsetX, y: p.y - offsetY };
     // setBounds with a fixed size: setPosition can resize the window when it
     // crosses monitors with different display scaling.
-    win.setBounds({ x: p.x - offsetX, y: p.y - offsetY, width: SIZE, height: SIZE });
+    win.setBounds({ ...next, width: SIZE, height: SIZE });
+    // Tell the page how far he moved, so he can sway with it.
+    win.webContents.send("mascot:moved", { dx: next.x - last.x, dy: next.y - last.y });
+    last = next;
   }, 16);
 }
 

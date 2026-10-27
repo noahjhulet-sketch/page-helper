@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- normal mascot, sleeping. Drawn by scripts/draw-mascots.mjs -->
+  <rect x="10" y="12" width="80" height="80" rx="22" fill="#7C5CFF"/>
+  <rect x="18" y="18" width="30" height="12" rx="6" fill="#FFFFFF" opacity="0.2"/>
+  <path d="M31 49 q6 4 12 0" stroke="#1F1640" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M57 49 q6 4 12 0" stroke="#1F1640" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <ellipse cx="50" cy="69" rx="2" ry="1.6" fill="#1F1640"/>
+</svg>

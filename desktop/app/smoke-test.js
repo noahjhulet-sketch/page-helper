@@ -59,7 +59,7 @@ Heat gives water molecules enough energy to escape into the air as vapor.
 Cooling vapor turns back into tiny droplets, which gather into clouds. See [the USGS water cycle page](https://www.usgs.gov/special-topics/water-science-school).`;
 
 export async function runSmokeTest({
-  mascotWindow, mascots, chooseMascot, snipScreen, useClipboard, newChat, attachTo, showChatBar, openHistoryEntry, openPanel, openBubble, saveEntry, useFakeScreen,
+  mascotWindow, mascots, chooseMascot, setMascotState, snipScreen, useClipboard, newChat, attachTo, showChatBar, openHistoryEntry, openPanel, openBubble, saveEntry, useFakeScreen,
 }) {
   const out = process.env.SMOKE_OUT || path.join(app.getPath("userData"), "screenshots");
   fs.mkdirSync(out, { recursive: true });
@@ -75,12 +75,31 @@ export async function runSmokeTest({
   watchConsole(mascotWindow.webContents);
   await wait(1500);
 
+  // Every mascot in every state, plus mid-drag, on one contact sheet.
+  const STATES = ["idle", "hover", "listening", "selecting", "thinking", "talking", "error", "sleeping", "dragged"];
+  const cells = [];
   for (const mascot of mascots) {
     chooseMascot(mascot.id);
-    await wait(500);
-    await save(mascotWindow, `mascot-${mascot.id}.png`);
+    await wait(400);
+    for (const state of STATES) {
+      setMascotState(state);
+      await wait(350);
+      const name = `face-${mascot.id}-${state}.png`;
+      await save(mascotWindow, name);
+      cells.push({ name, label: `${mascot.id} · ${state}` });
+    }
+    // Pretend he's being dragged quickly to the right, to see the sway.
+    setMascotState("dragged");
+    await inPage(mascotWindow, "drag = { moving: true }; window.fakeDrag = setInterval(() => onMoved({ dx: 18, dy: 0 }), 16);");
+    await wait(450);
+    const name = `face-${mascot.id}-swaying.png`;
+    await save(mascotWindow, name);
+    cells.push({ name, label: `${mascot.id} · swaying` });
+    await inPage(mascotWindow, "clearInterval(window.fakeDrag); drag = null;");
   }
+  setMascotState("idle");
   chooseMascot("normal");
+  await saveSheet(out, cells, "faces.png", STATES.length + 1);
 
   // Snip a fake worksheet: drag a box, check the menu, pick Explain. With no API key
   // saved, the bubble should show the "add your key" message.
@@ -148,6 +167,22 @@ export async function runSmokeTest({
 
   console.log(`Smoke test screenshots saved to ${out}`);
   app.quit();
+}
+
+// Lays screenshots out in a labeled grid and saves that as one image.
+async function saveSheet(out, cells, name, columns) {
+  const html = `<body style="margin:0;padding:8px;background:#2a2838;font:11px Segoe UI;color:#ddd">
+    <div style="display:grid;grid-template-columns:repeat(${columns},140px);gap:6px">
+    ${cells.map((c) => `<figure style="margin:0;text-align:center;background:#3a3750"><img src="${c.name}" width="140" height="140"><figcaption>${c.label}</figcaption></figure>`).join("")}
+    </div></body>`;
+  const file = path.join(out, "sheet.html");
+  fs.writeFileSync(file, html);
+  const rows = Math.ceil(cells.length / columns);
+  const win = new BrowserWindow({ width: columns * 146 + 16, height: rows * 166 + 16, show: false });
+  await win.loadFile(file);
+  await wait(300);
+  fs.writeFileSync(path.join(out, name), (await win.webContents.capturePage()).toPNG());
+  win.destroy();
 }
 
 // Renders FAKE_SCREEN in a hidden window and uses that as every monitor's screenshot.

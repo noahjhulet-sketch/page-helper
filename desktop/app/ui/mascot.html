@@ -8,7 +8,12 @@
 </head>
 <body>
   <div id="mascot" data-state="idle">
-    <img id="mascot-img" alt="" draggable="false">
+    <!-- Tilted by the drag physics in mascot.js; the image inside has the state animations. -->
+    <div id="tilt">
+      <img id="mascot-img" alt="" draggable="false">
+    </div>
+    <div class="thought" aria-hidden="true"><span></span><span></span><span></span></div>
+    <div class="zzz" aria-hidden="true"><span>z</span><span>z</span><span>Z</span></div>
   </div>
   <script src="mascot.js"></script>
 </body>

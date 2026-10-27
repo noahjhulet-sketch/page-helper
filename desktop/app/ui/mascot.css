@@ -6,7 +6,8 @@ html, body {
   user-select: none;
 }
 
-/* The mascot sits at the bottom-center of its window, leaving room above to bounce. */
+/* The mascot sits at the bottom-center of its window, leaving room above to bounce
+   and for his thought bubble. */
 body {
   display: flex;
   align-items: flex-end;
@@ -16,10 +17,18 @@ body {
 }
 
 #mascot {
+  position: relative;
   width: var(--size, 72px);
   height: var(--size, 72px);
   cursor: grab;
-  transition: transform 150ms ease, filter 150ms ease;
+  transition: transform 150ms ease, filter 150ms ease, opacity 600ms ease;
+}
+
+/* Swings like he's hanging from where you're holding him (see mascot.js). */
+#tilt {
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 0;
 }
 
 #mascot img {
@@ -43,24 +52,88 @@ body {
 }
 #mascot[data-state="listening"] img { animation: pop 300ms ease-out; }
 
-#mascot[data-state="thinking"] img { animation: think 1.6s ease-in-out infinite; }
+#mascot[data-state="selecting"] img { animation: peer 1.2s ease-in-out infinite; }
+#mascot[data-state="thinking"] img { animation: think 2.4s ease-in-out infinite; }
 #mascot[data-state="talking"] img { animation: talk 0.5s ease-in-out infinite; }
 #mascot[data-state="error"] img { animation: shake 0.4s ease-in-out 2; }
 
+#mascot[data-state="sleeping"] { opacity: 0.8; }
+#mascot[data-state="sleeping"] img { animation: breathe 5s ease-in-out infinite; }
+
 #mascot[data-state="dragged"] {
-  transform: scale(1.08) rotate(-4deg);
-  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.3));
+  transform: scale(1.08);
+  filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.3));
   cursor: grabbing;
 }
+
+/* A little squash when he's set down. */
+#mascot.landing img { animation: land 450ms ease-out; }
+
+/* "…" thought bubble, top right, while thinking. */
+.thought {
+  position: absolute;
+  top: -22px;
+  right: -16px;
+  display: none;
+  gap: 3px;
+  padding: 4px 7px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+.thought::after { /* the little tail toward his head */
+  content: "";
+  position: absolute;
+  left: 2px;
+  bottom: -5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+.thought span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #7c5cff;
+  animation: dot 1.2s ease-in-out infinite;
+}
+.thought span:nth-child(2) { animation-delay: 0.2s; }
+.thought span:nth-child(3) { animation-delay: 0.4s; }
+#mascot[data-state="thinking"] .thought { display: flex; animation: pop 250ms ease-out; }
+
+/* Floating Zzz while asleep. */
+.zzz {
+  position: absolute;
+  top: -10px;
+  right: -12px;
+  display: none;
+  font: 700 13px "Segoe UI", system-ui, sans-serif;
+  color: #c9bcff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+.zzz span { position: absolute; opacity: 0; animation: float-z 3s ease-out infinite; }
+.zzz span:nth-child(2) { animation-delay: 1s; font-size: 15px; }
+.zzz span:nth-child(3) { animation-delay: 2s; font-size: 18px; }
+#mascot[data-state="sleeping"] .zzz { display: block; }
 
 @keyframes breathe { 50% { transform: scale(1.03); } }
 @keyframes sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
 @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 @keyframes pop { from { transform: scale(0.85); } to { transform: scale(1); } }
-@keyframes think { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg) translateY(-3px); } }
-@keyframes talk { 50% { transform: scaleY(0.94) scaleX(1.03); } }
+@keyframes peer { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(2px) scale(1.02); } }
+@keyframes think { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg) translateY(-2px); } }
+@keyframes talk { 50% { transform: scaleY(0.95) scaleX(1.03); } }
 @keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+@keyframes land { 30% { transform: scale(1.12, 0.86); } 60% { transform: scale(0.95, 1.06); } 100% { transform: none; } }
+@keyframes dot { 0%, 60%, 100% { transform: translateY(0); opacity: 0.5; } 30% { transform: translateY(-3px); opacity: 1; } }
+@keyframes float-z {
+  0% { opacity: 0; transform: translate(0, 0); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(10px, -26px); }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  #mascot img { animation: none !important; }
+  #mascot img, .thought span, .zzz span { animation: none !important; }
+  .zzz span { opacity: 1; }
 }

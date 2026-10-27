@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- normal mascot, hover. Drawn by scripts/draw-mascots.mjs -->
+  <rect x="10" y="12" width="80" height="80" rx="22" fill="#7C5CFF"/>
+  <rect x="18" y="18" width="30" height="12" rx="6" fill="#FFFFFF" opacity="0.2"/>
+  <path d="M31 51 q6 -8 12 0" stroke="#1F1640" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M57 51 q6 -8 12 0" stroke="#1F1640" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M41 65 q9 12.8 18 0 Z" fill="#1F1640" stroke="#1F1640" stroke-width="2" stroke-linejoin="round"/>
+</svg>

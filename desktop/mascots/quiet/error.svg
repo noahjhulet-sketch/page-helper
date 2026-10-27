@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- quiet mascot, error. Drawn by scripts/draw-mascots.mjs -->
+  <circle cx="50" cy="52" r="42" fill="#8FA3BF"/>
+  <ellipse cx="36" cy="30" rx="13" ry="7" fill="#FFFFFF" opacity="0.25"/>
+  <ellipse cx="39.5" cy="55.5" rx="3.5" ry="3.5" fill="#2B3445"></ellipse>
+  <ellipse cx="63.5" cy="55.5" rx="3.5" ry="3.5" fill="#2B3445"></ellipse>
+  <path d="M31 46 L44 42 M69 46 L56 42" stroke="#2B3445" stroke-width="3" stroke-linecap="round"/>
+  <path d="M45 71 q2.5 -4 5 0 q2.5 4 5 0" stroke="#2B3445" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M84 26 q-5 8 0 11 q5 -3 0 -11 Z" fill="#7FD3FF" stroke="#4BA3D9" stroke-width="1"/>
+</svg>

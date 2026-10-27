@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- quiet mascot, selecting. Drawn by scripts/draw-mascots.mjs -->
+  <circle cx="50" cy="52" r="42" fill="#8FA3BF"/>
+  <ellipse cx="36" cy="30" rx="13" ry="7" fill="#FFFFFF" opacity="0.25"/>
+  <ellipse cx="36" cy="57" rx="3.5" ry="3.5" fill="#2B3445"></ellipse>
+  <ellipse cx="60" cy="57" rx="3.5" ry="3.5" fill="#2B3445"></ellipse>
+  <path d="M46.666666666666664 70 h6.666666666666667" stroke="#2B3445" stroke-width="4" fill="none" stroke-linecap="round"/>
+</svg>

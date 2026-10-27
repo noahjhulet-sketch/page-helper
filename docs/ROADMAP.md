@@ -50,9 +50,10 @@ Your idea: talk to the buddy without starting from a snip ("make me a study guid
 - [ ] **Checkpoint:** a real chat, with a source attached partway through
 
 ## Phase 4: Personality
-- Keep the current mascots as the art for now (custom art can come later)
-- Drag physics: the buddy tilts and sways with the motion as you move him, then settles
-- Expressions per state: thinking (eyes up, "…" bubble), talking (mouth moves), listening (wide eyes), error (worried), sleeping (closed eyes, Zzz), being dragged (surprised)
+- [x] Keep the current mascots as the art for now (custom art can come later)
+- [x] Drag physics: he swings with the motion as you move him, then wobbles and settles; a little squash when set down
+- [x] Expressions for all three mascots: idle (blinks), hover (happy), listening (wide eyes), selecting (looks down), thinking (eyes up, "…" bubble), talking (mouth moves), error (worried, sweat drop), sleeping (eyes closed, Zzz, after 3 minutes idle), dragged (surprised)
+- [ ] **Checkpoint:** the animations feel right in real use
 - Wording that matches the chattiness level
 - Study mode for Blanks: hint, then explanation, then answer
 - "Graded work" toggle: Blanks becomes explain-only
