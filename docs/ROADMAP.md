@@ -29,11 +29,17 @@ Status: ✅ done · 🔨 in progress · ⏳ next · 💤 later
 - [x] The box you draw is the preview: only that region is sent
 - [x] **Checkpoint** passed (tested on Haiku)
 
-## Phase 3: Clipboard and chat ⏳
-- Clipboard hotkey (text or image)
-- Expand a bubble into a chat panel for follow-ups
-- Session history stored only on this PC, with "clear all"
-- Pin a result on screen
+## Phase 3: Clipboard and chat 🔨
+- [x] Follow-up questions in the bubble, keeping the original snip and answers as context
+- [x] Clipboard hotkey (`Ctrl+Alt+Space`) for copied text or images; the bubble offers the tools
+  (not `Ctrl+Shift+V`: a global hotkey would block "paste as plain text" in every app)
+- [x] History window: search, reopen and keep asking, delete, clear all; saved only on this PC; can be turned off
+- [x] Pin a bubble so the next snip opens a new one instead of replacing it
+- [x] Dark-and-purple theme shared by every window
+- [x] Right-click menu: snip, clipboard, History, Model, Mascot
+- [x] Model and history settings apply instantly; only the API key has a Save button
+- [x] Settings moved to `%APPDATA%\Page Helper` (the old "Electron" folder is migrated automatically)
+- [ ] **Checkpoint:** follow-ups, clipboard, history and pinning work with real answers
 
 ## Phase 4: Personality
 - Your mascot art dropped into `desktop/mascots/`

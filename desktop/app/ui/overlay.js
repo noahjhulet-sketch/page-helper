@@ -7,7 +7,7 @@ const GAP = 8;
 
 let start = null;
 let rect = null;
-let needsQuestion = new Set();
+let menu = null;
 
 function draw(r) {
   Object.assign($("box").style, { left: `${r.x}px`, top: `${r.y}px`, width: `${r.width}px`, height: `${r.height}px` });
@@ -22,23 +22,14 @@ function clearBox() {
 
 // Below the box if it fits, else above, else inside its bottom edge.
 function placeMenu() {
-  const menu = $("menu");
-  menu.hidden = false;
-  const { width, height } = menu.getBoundingClientRect();
+  const el = $("menu");
+  el.hidden = false;
+  const { width, height } = el.getBoundingClientRect();
   const left = Math.min(Math.max(GAP, rect.x + rect.width / 2 - width / 2), innerWidth - width - GAP);
   let top = rect.y + rect.height + GAP;
   if (top + height > innerHeight - GAP) top = rect.y - height - GAP;
   if (top < GAP) top = rect.y + rect.height - height - GAP;
-  Object.assign(menu.style, { left: `${left}px`, top: `${Math.max(GAP, top)}px` });
-}
-
-function choose(actionId) {
-  const question = $("question").value.trim();
-  if (needsQuestion.has(actionId) && !question) {
-    $("question").focus();
-    return;
-  }
-  buddy.snipDone({ rect, actionId, question });
+  Object.assign(el.style, { left: `${left}px`, top: `${Math.max(GAP, top)}px` });
 }
 
 document.addEventListener("pointerdown", (e) => {
@@ -67,16 +58,11 @@ document.addEventListener("pointerup", () => {
   start = null;
   if (!rect || rect.width < MIN_SIZE || rect.height < MIN_SIZE) return clearBox();
   placeMenu();
-  $("menu").querySelector("button").focus();
+  menu.focus();
 });
 
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") buddy.snipCancel();
-});
-
-$("ask-form").addEventListener("submit", (e) => {
-  e.preventDefault();
-  choose([...needsQuestion][0]);
 });
 
 buddy.onSnipClear(clearBox);
@@ -84,16 +70,5 @@ buddy.onSnipClear(clearBox);
 buddy.snipInit().then((init) => {
   if (!init) return buddy.snipCancel();
   $("screenshot").src = init.screenshot;
-  needsQuestion = new Set(init.actions.filter((a) => a.needsQuestion).map((a) => a.id));
-  $("ask-form").hidden = needsQuestion.size === 0;
-  for (const action of init.actions) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.title = action.description;
-    const icon = Object.assign(document.createElement("span"), { className: "icon", textContent: action.icon });
-    const label = Object.assign(document.createElement("span"), { textContent: action.label });
-    button.append(icon, label);
-    button.addEventListener("click", () => choose(action.id));
-    $("actions").append(button);
-  }
+  menu = buildToolMenu($("menu"), init.actions, (actionId, question) => buddy.snipDone({ rect, actionId, question }));
 });

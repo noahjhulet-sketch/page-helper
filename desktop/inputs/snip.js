@@ -118,7 +118,7 @@ function crop({ display, shot }, rect) {
     mediaType = "image/jpeg";
   }
   return {
-    image: { data, mediaType },
+    input: { kind: "image", data, mediaType },
     thumbnail: image.resize({ height: 80, quality: "good" }).toDataURL(),
   };
 }

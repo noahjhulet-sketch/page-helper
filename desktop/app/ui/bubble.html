@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src data:">
+  <title>Page Helper</title>
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="tool-menu.css">
+  <link rel="stylesheet" href="bubble.css">
+</head>
+<body>
+  <div id="card" class="card">
+    <header>
+      <div class="thumb">
+        <img id="thumb" alt="What you asked about">
+        <span id="thumb-icon" aria-hidden="true">📋</span>
+      </div>
+      <div class="heading">
+        <div id="title" class="title"></div>
+        <div id="preview" class="preview"></div>
+      </div>
+      <button id="pin" class="ghost icon-btn" title="Pin: keep this on screen" aria-label="Pin" aria-pressed="false">📌</button>
+      <button id="close" class="ghost icon-btn" title="Close (Esc)" aria-label="Close">✕</button>
+    </header>
+
+    <div id="menu" class="menu" hidden></div>
+    <main id="chat" class="chat"></main>
+
+    <form id="follow-up" class="follow-up" hidden>
+      <input id="question" type="text" placeholder="Ask a follow-up…" autocomplete="off">
+      <button type="submit" class="primary" aria-label="Send">↵</button>
+    </form>
+  </div>
+  <script src="tool-menu.js"></script>
+  <script src="bubble.js"></script>
+</body>
+</html>

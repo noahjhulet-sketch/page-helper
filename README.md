@@ -22,25 +22,31 @@ The first time, Settings opens so you can paste your Anthropic API key. After th
 1. **Click** the buddy, or press **Ctrl + Shift + Space** from anywhere. The screen freezes and dims.
 2. **Drag a box** around what you want help with. Only that box is sent to Claude. **Esc** cancels.
 3. **Pick a tool**: Summarize, Explain, Blanks, Sources, or type a question and press Enter.
-4. The answer appears in a bubble next to the buddy. **Copy** copies it; **✕** or **Esc** closes it (and stops the request if it's still running).
+4. The answer appears in a bubble next to the buddy. Type in **Ask a follow-up…** to keep going. **Copy** copies an answer; **✕** or **Esc** closes the bubble (and stops a request that's still running).
+
+**From the clipboard:** copy some text or an image, then press **Ctrl + Alt + Space**. A bubble opens with the same tools.
 
 Also:
+- **📌 Pin** a bubble to keep it on screen; the next snip opens a new bubble instead of replacing it. Drag bubbles by their top bar.
+- **History** (right-click the buddy → History…) lists past snips and answers. Click one to reopen it and keep asking. It's saved only on this PC and can be turned off in Settings.
 - **Drag** the buddy to move it. It remembers where you leave it.
-- **Right-click** it, or the purple dot in the taskbar tray, for Settings, switching mascots, hiding it and quitting.
-- Model choice is in Settings. Opus gives the best answers; Haiku is far cheaper.
+- **Right-click** it, or the purple dot in the taskbar tray, to switch model or mascot, open History or Settings, hide it, or quit.
+- Opus gives the best answers; Haiku is far cheaper.
 
 ## Layout
 
 | Folder | What's in it |
 |---|---|
 | `core/` | Claude API client (official Anthropic SDK) and Markdown renderer |
-| `desktop/app/` | The Electron app: windows, tray, hotkey, settings, answer bubble |
+| `desktop/app/` | The Electron app: buddy, bubbles, sessions, history, settings, menus. Pages are in `ui/`, sharing `theme.css` |
 | `desktop/actions/` | One file per tool (see its README to add one) |
-| `desktop/inputs/` | Where content comes from: the screen snip, later the clipboard |
+| `desktop/inputs/` | Where content comes from: the screen snip and the clipboard |
 | `desktop/mascots/` | One folder per mascot (see its README to add your own) |
 | `docs/` | Roadmap and design notes |
 
-`npm.cmd run smoke-test` starts the app with throwaway settings, walks through the mascots, a snip of a fake worksheet, the answer bubble and Settings, saves screenshots, then quits. It's a quick check that nothing is broken. It makes no API calls.
+`npm.cmd run smoke-test` starts the app with throwaway settings, walks through the mascots, a snip of a fake worksheet, bubbles (snip, clipboard, chat), History and Settings, saves screenshots, then quits. It's a quick check that nothing is broken. It makes no API calls and doesn't touch your real clipboard, settings or history.
+
+Settings and history are stored in `%APPDATA%\Page Helper`.
 
 ## Ground rules
 

@@ -4,7 +4,7 @@ The tools in the snip menu. Each `.js` file here is one tool, and the app finds 
 
 ```js
 import { streamMessage } from "../../core/claude.js";
-import { SCREEN_CONTEXT, imageBlock } from "./_shared.js";
+import { sourceNote, userContent } from "./_shared.js";
 
 export default {
   id: "translate",            // unique name
@@ -14,14 +14,14 @@ export default {
   order: 6,                   // position in the menu, lowest first
   needsQuestion: false,       // true = uses the "Ask about this…" box
 
-  // image: { data, mediaType } of the snip. question: the typed text (if any).
+  // input: the snip or clipboard (see _shared.js). question: the typed text (if any).
   // Call onText(markdownSoFar) to stream; return the final Markdown.
-  run({ image, question, settings, onText, signal }) {
+  run({ input, question, settings, onText, signal }) {
     return streamMessage(settings, {
       max_tokens: 16000,
       output_config: { effort: "medium" },
-      system: `You translate text on someone's screen. ${SCREEN_CONTEXT}`,
-      messages: [{ role: "user", content: [imageBlock(image), { type: "text", text: "Translate this into English." }] }],
+      system: `You translate text for someone. ${sourceNote(input)}`,
+      messages: [{ role: "user", content: userContent(input, "Translate this into English.") }],
     }, onText, signal);
   },
 };

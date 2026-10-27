@@ -22,10 +22,20 @@ contextBridge.exposeInMainWorld("buddy", {
   onSnipClear: (fn) => ipcRenderer.on("snip:clear", () => fn()),
 
   // Answer bubble
-  onAnswer: (fn) => ipcRenderer.on("answer:update", (_e, update) => fn(update)),
-  resizeAnswer: (height) => ipcRenderer.send("answer:resize", height),
-  copyAnswer: () => ipcRenderer.send("answer:copy"),
-  closeAnswer: () => ipcRenderer.send("answer:close"),
+  onBubble: (fn) => ipcRenderer.on("bubble:update", (_e, state) => fn(state)),
+  resizeBubble: (height) => ipcRenderer.send("bubble:resize", height),
+  chooseTool: (choice) => ipcRenderer.send("bubble:choose", choice),
+  askFollowUp: (question) => ipcRenderer.send("bubble:ask", question),
+  copyAnswer: (index) => ipcRenderer.send("bubble:copy", index),
+  pinBubble: () => ipcRenderer.send("bubble:pin"),
+  closeBubble: () => ipcRenderer.send("bubble:close"),
+
+  // History window
+  listHistory: () => ipcRenderer.invoke("history:list"),
+  openHistoryEntry: (id) => ipcRenderer.send("history:open", id),
+  deleteHistoryEntry: (id) => ipcRenderer.invoke("history:delete", id),
+  clearHistory: () => ipcRenderer.invoke("history:clear"),
+  onHistoryChanged: (fn) => ipcRenderer.on("history:changed", () => fn()),
 
   // Settings window
   getSettings: () => ipcRenderer.invoke("settings:get"),

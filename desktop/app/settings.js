@@ -9,7 +9,9 @@ import { DEFAULT_MODEL } from "../../core/claude.js";
 const DEFAULTS = {
   model: DEFAULT_MODEL,
   mascot: "normal",
-  hotkey: "Control+Shift+Space",
+  hotkey: "Control+Shift+Space", // snip the screen
+  clipboardHotkey: "Control+Alt+Space", // use what's on the clipboard
+  saveHistory: true,
   position: null, // { x, y } of the mascot window, or null for the default corner
   apiKeyEncrypted: "",
 };
@@ -17,8 +19,14 @@ const DEFAULTS = {
 let file;
 let data;
 
-export function loadSettings() {
+// `migrateFrom`: an older settings file to move here if this one doesn't exist yet.
+export function loadSettings({ migrateFrom } = {}) {
   file = path.join(app.getPath("userData"), "settings.json");
+  if (migrateFrom && !fs.existsSync(file) && fs.existsSync(migrateFrom)) {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.copyFileSync(migrateFrom, file);
+    fs.rmSync(migrateFrom);
+  }
   try {
     data = { ...DEFAULTS, ...JSON.parse(fs.readFileSync(file, "utf8")) };
   } catch {

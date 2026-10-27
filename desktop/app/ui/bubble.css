@@ -1,0 +1,101 @@
+:root { --pad: 10px; } /* room around the card for its shadow; bubble.js reads this */
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+}
+
+body {
+  padding: var(--pad);
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-end;
+  font: var(--font);
+  color: var(--text);
+}
+
+.card {
+  width: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+.card.pinned { border-color: var(--accent); }
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 10px;
+  border-bottom: 1px solid var(--border);
+  -webkit-app-region: drag; /* drag the bubble by its header */
+}
+header button { -webkit-app-region: no-drag; }
+
+.thumb {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  overflow: hidden;
+  font-size: 20px;
+}
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.heading { flex: 1; min-width: 0; }
+.title, .preview { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.title { font-weight: 600; }
+.preview { font-size: 12.5px; color: var(--muted); }
+.preview:empty { display: none; }
+
+.icon-btn { padding: 4px 8px; font-size: 13px; }
+#pin { filter: grayscale(1); opacity: 0.6; }
+#pin[aria-pressed="true"] { filter: none; opacity: 1; background: var(--accent-soft); }
+
+.menu { padding: 10px; }
+
+.chat {
+  padding: 4px 14px 10px;
+  overflow-y: auto;
+  user-select: text;
+}
+.chat:empty { display: none; }
+
+.question {
+  margin: 10px 0 4px auto;
+  width: fit-content;
+  max-width: 85%;
+  padding: 6px 12px;
+  border-radius: 12px 12px 4px 12px;
+  background: var(--accent-soft);
+  border: 1px solid rgba(124, 92, 255, 0.35);
+  white-space: pre-wrap;
+}
+
+.answer { margin-bottom: 4px; }
+.answer + .question { margin-top: 14px; }
+.status { color: var(--muted); font-size: 12.5px; padding: 8px 0 2px; }
+.error { color: var(--error); padding: 8px 0; }
+
+.answer-tools { display: flex; justify-content: flex-end; }
+.answer-tools button { font-size: 12px; padding: 2px 8px; }
+
+.follow-up {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px 10px;
+  border-top: 1px solid var(--border);
+}
+.follow-up input { flex: 1; min-width: 0; }
+.follow-up button { padding: 0 14px; }

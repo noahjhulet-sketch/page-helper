@@ -1,5 +1,5 @@
 import { createMessage, textOf } from "../../core/claude.js";
-import { SCREEN_CONTEXT, imageBlock } from "./_shared.js";
+import { sourceNote, userContent } from "./_shared.js";
 
 export default {
   id: "sources",
@@ -8,21 +8,17 @@ export default {
   description: "Search the web for related sources",
   order: 4,
 
-  async run({ image, settings, onText, signal }) {
+  async run({ input, settings, onText, signal }) {
     onText("*Searching the web…*");
     const messages = [
       {
         role: "user",
-        content: [
-          imageBlock(image),
-          {
-            type: "text",
-            text:
-              "Find 5–8 high-quality sources on the topic shown here: original reporting, official documents or academic work where possible. " +
-              "Write a Markdown list. For each, give a linked title, the site name, and one sentence on what it adds. " +
-              "Finish with one line on whether the sources agree with what's on screen.",
-          },
-        ],
+        content: userContent(
+          input,
+          "Find 5–8 high-quality sources on this topic: original reporting, official documents or academic work where possible. " +
+            "Write a Markdown list. For each, give a linked title, the site name, and one sentence on what it adds. " +
+            "Finish with one line on whether the sources agree with what I'm reading.",
+        ),
       },
     ];
 
@@ -34,7 +30,7 @@ export default {
         {
           max_tokens: 16000,
           output_config: { effort: "medium" },
-          system: `You find sources for what someone is reading. ${SCREEN_CONTEXT}`,
+          system: `You find sources for what someone is reading. ${sourceNote(input)}`,
           tools: [{ type: searchTool(settings.model), name: "web_search", max_uses: 6 }],
           messages,
         },

@@ -1,6 +1,7 @@
 // `npm run smoke-test`: starts the app with throwaway settings and walks through it,
 // saving screenshots: each mascot, the snip overlay (on a fake worksheet instead of
-// your real screen), the answer bubble, and Settings. Then it quits.
+// your real screen), bubbles for a snip, the clipboard and a chat, History and
+// Settings. It makes no API calls and never reads or changes your real clipboard.
 // Screenshots go to the folder in SMOKE_OUT, or a temp folder if it isn't set.
 
 import { app, BrowserWindow } from "electron";
@@ -17,6 +18,17 @@ const FAKE_SCREEN = `<body style="margin:0;font:22px Georgia,serif;background:#f
     <p>3. Rain, snow and hail are all kinds of ________.</p>
   </div></body>`;
 
+const FAKE_COPY =
+  "Photosynthesis is the process plants use to turn light, water and carbon dioxide into glucose and oxygen. It happens mostly in the leaves, inside chloroplasts.";
+
+const SAMPLE_FOLLOW_UP =
+  "Evaporation goes the other way: liquid water **becomes** vapor. Clouds need vapor to turn back into liquid droplets, which is condensation.";
+
+const FAKE_HISTORY = [
+  { title: "Blanks", thumbnail: "", preview: "", input: { kind: "text", text: "x" }, turns: [{ question: null, actionId: "blanks", label: "Blanks", markdown: "**1.** Water turning into vapor… → **evaporation**" }] },
+  { title: "Summarize", thumbnail: "", preview: "Photosynthesis is the process plants use…", input: { kind: "text", text: "x" }, turns: [{ question: null, actionId: "summarize", label: "Summarize", markdown: "Plants turn light into food." }, { question: "Where?", actionId: null, label: "Follow-up", markdown: "In the leaves." }] },
+];
+
 const SAMPLE_ANSWER = `**1.** Water turning into vapor because of heat is called ____.
 
 → **evaporation** · high confidence
@@ -31,11 +43,15 @@ Heat gives water molecules enough energy to escape into the air as vapor.
 
 Cooling vapor turns back into tiny droplets, which gather into clouds. See [the USGS water cycle page](https://www.usgs.gov/special-topics/water-science-school).`;
 
-export async function runSmokeTest({ mascotWindow, mascots, chooseMascot, activate, openSettingsWindow, openAnswer, useFakeScreen }) {
+export async function runSmokeTest({ mascotWindow, mascots, chooseMascot, snipScreen, useClipboard, openPanel, openBubble, saveEntry, useFakeScreen }) {
   const out = process.env.SMOKE_OUT || path.join(app.getPath("userData"), "screenshots");
   fs.mkdirSync(out, { recursive: true });
   const save = async (win, name) => fs.writeFileSync(path.join(out, name), (await win.webContents.capturePage()).toPNG());
-  const findWindow = (page) => BrowserWindow.getAllWindows().find((w) => w.webContents.getURL().endsWith(page));
+  // The newest window showing `page`.
+  const findWindow = (page) =>
+    BrowserWindow.getAllWindows()
+      .filter((w) => w.webContents.getURL().endsWith(page))
+      .sort((a, b) => b.id - a.id)[0];
   const inPage = (win, js) => win.webContents.executeJavaScript(js);
 
   app.on("web-contents-created", (_e, contents) => watchConsole(contents));
@@ -52,7 +68,7 @@ export async function runSmokeTest({ mascotWindow, mascots, chooseMascot, activa
   // Snip a fake worksheet: drag a box, check the menu, pick Explain. With no API key
   // saved, the bubble should show the "add your key" message.
   useFakeScreen(fakeScreen);
-  activate();
+  snipScreen();
   await wait(2000);
   const overlay = findWindow("overlay.html");
   await save(overlay, "snip-start.png");
@@ -63,17 +79,42 @@ export async function runSmokeTest({ mascotWindow, mascots, chooseMascot, activa
   await save(overlay, "snip-menu.png");
   await inPage(overlay, `[...document.querySelectorAll(".actions button")].find((b) => b.textContent.includes("Explain")).click()`);
   await wait(1500);
-  await save(findWindow("answer.html"), "answer-no-key.png");
+  await save(findWindow("bubble.html"), "bubble-no-key.png");
 
-  // A finished answer with Markdown, to check how answers look.
-  const bubble = openAnswer({ title: "Blanks", thumbnail: "", near: mascotWindow.getBounds(), onClose() {} });
-  bubble.update(SAMPLE_ANSWER, "done");
-  await wait(1200);
-  await save(bubble.window, "answer-sample.png");
-
-  const settingsWindow = openSettingsWindow();
+  // Clipboard text (fake, so your real clipboard is untouched): the bubble offers the tools.
+  useClipboard({ input: { kind: "text", text: FAKE_COPY }, thumbnail: "", preview: FAKE_COPY.slice(0, 120) });
   await wait(1500);
-  await save(settingsWindow, "settings.png");
+  await save(findWindow("bubble.html"), "bubble-clipboard.png");
+
+  useClipboard(null);
+  await wait(1200);
+  await save(findWindow("bubble.html"), "bubble-empty-clipboard.png");
+
+  // A pinned conversation with a follow-up, to check how chats look.
+  const chat = openBubble({
+    title: "Blanks",
+    preview: "",
+    turns: [
+      { question: null, label: "Blanks", markdown: SAMPLE_ANSWER },
+      { question: "Why isn't #2 evaporation too?", label: "Follow-up", markdown: SAMPLE_FOLLOW_UP },
+    ],
+    near: mascotWindow.getBounds(),
+  });
+  chat.togglePin();
+  await wait(1200);
+  await save(chat.win, "bubble-chat.png");
+
+  // History with a couple of saved sessions.
+  for (const [i, entry] of FAKE_HISTORY.entries()) {
+    saveEntry({ ...entry, id: `smoke-${i}`, createdAt: Date.now() - i * 3_600_000 }, entry.input);
+  }
+  const history = openPanel("history");
+  await wait(1500);
+  await save(history, "history.png");
+
+  const settings = openPanel("settings");
+  await wait(1500);
+  await save(settings, "settings.png");
 
   console.log(`Smoke test screenshots saved to ${out}`);
   app.quit();

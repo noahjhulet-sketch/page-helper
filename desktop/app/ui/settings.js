@@ -1,7 +1,9 @@
-// Settings page. The API key is write-only here: the page learns whether one is
-// saved, never the key itself.
+// Settings page. Everything applies as soon as it changes, except the API key,
+// which has its own Save button. The key is write-only here: the page learns
+// whether one is saved, never the key itself.
 
 const $ = (id) => document.getElementById(id);
+const formatKey = (hotkey) => hotkey.replace("Control", "Ctrl").replaceAll("+", " + ");
 
 async function load() {
   const s = await buddy.getSettings();
@@ -10,9 +12,11 @@ async function load() {
   $("model").replaceChildren(...s.models.map((m) => new Option(m.label, m.id, false, m.id === s.model)));
   $("api-key").placeholder = s.hasApiKey ? "Saved. Paste a new key to replace it." : "sk-ant-…";
   $("remove-key").hidden = !s.hasApiKey;
-  $("hotkey").textContent = s.hotkey.replace("Control", "Ctrl").replaceAll("+", " + ");
+  $("hotkey").textContent = formatKey(s.hotkey);
+  $("clipboard-hotkey").textContent = formatKey(s.clipboardHotkey);
   $("hotkey-error").textContent = s.hotkeyError;
   $("hotkey-error").hidden = !s.hotkeyError;
+  $("save-history").checked = s.saveHistory;
 }
 
 function mascotOption(mascot, checked) {
@@ -27,32 +31,39 @@ function mascotOption(mascot, checked) {
   return label;
 }
 
-function showStatus(text, isError = false) {
-  $("status").textContent = text;
-  $("status").className = isError ? "error" : "";
-  if (!isError) setTimeout(() => ($("status").textContent = ""), 2000);
+function showStatus(el, text, isError = false) {
+  el.textContent = text;
+  el.className = isError ? "error" : "hint";
+  if (!isError) setTimeout(() => (el.textContent = ""), 2000);
 }
 
-$("form").addEventListener("submit", async (e) => {
+$("key-form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const changes = { model: $("model").value };
   const key = $("api-key").value.trim();
-  if (key) changes.apiKey = key;
-
-  const result = await buddy.saveSettings(changes);
-  if (!result.ok) return showStatus(result.error, true);
+  if (!key) return $("api-key").focus();
+  const result = await buddy.saveSettings({ apiKey: key });
+  if (!result.ok) return showStatus($("status"), result.error, true);
   $("api-key").value = "";
   await load();
-  showStatus("Saved.");
+  showStatus($("status"), "Key saved.");
 });
 
 $("remove-key").addEventListener("click", async () => {
   await buddy.saveSettings({ apiKey: "" });
   await load();
-  showStatus("Key removed.");
+  showStatus($("status"), "Key removed.");
 });
 
-// The mascot can also be changed from the tray menu while this window is open.
+$("model").addEventListener("change", () => buddy.saveSettings({ model: $("model").value }));
+$("save-history").addEventListener("change", () => buddy.saveSettings({ saveHistory: $("save-history").checked }));
+
+$("clear-history").addEventListener("click", async () => {
+  if (!confirm("Delete every saved snip and answer? This can't be undone.")) return;
+  await buddy.clearHistory();
+  showStatus($("history-status"), "History cleared.");
+});
+
+// The mascot and model can also be changed from the right-click menu while this window is open.
 buddy.onSettingsChanged(load);
 
 load();

@@ -1,5 +1,5 @@
 import { streamMessage } from "../../core/claude.js";
-import { SCREEN_CONTEXT, imageBlock } from "./_shared.js";
+import { sourceNote, userContent } from "./_shared.js";
 
 export default {
   id: "summarize",
@@ -8,20 +8,17 @@ export default {
   description: "The key points in a few bullets",
   order: 1,
 
-  run({ image, settings, onText, signal }) {
+  run({ input, settings, onText, signal }) {
     return streamMessage(
       settings,
       {
         max_tokens: 16000,
         output_config: { effort: "medium" },
-        system: `You summarize what's on someone's screen. ${SCREEN_CONTEXT} Skip menus, ads and other interface clutter. Use Markdown.`,
+        system: `You summarize what someone is reading. ${sourceNote(input)} Skip menus, ads and other interface clutter. Use Markdown.`,
         messages: [
           {
             role: "user",
-            content: [
-              imageBlock(image),
-              { type: "text", text: "Summarize this: a one-sentence overview, then 3–6 bullet points with the key ideas, facts and conclusions." },
-            ],
+            content: userContent(input, "Summarize this: a one-sentence overview, then 3–6 bullet points with the key ideas, facts and conclusions."),
           },
         ],
       },

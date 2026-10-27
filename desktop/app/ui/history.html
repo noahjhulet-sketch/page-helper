@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src data:">
+  <title>Page Helper History</title>
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="history.css">
+</head>
+<body>
+  <header>
+    <h1>History</h1>
+    <input id="search" type="search" placeholder="Search…" aria-label="Search history">
+    <button id="clear" type="button">Clear all</button>
+  </header>
+  <p class="hint">Saved only on this PC. Click one to reopen it and keep asking questions.</p>
+  <ul id="list" class="list"></ul>
+  <p id="empty" class="empty" hidden></p>
+  <script src="history.js"></script>
+</body>
+</html>
