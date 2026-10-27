@@ -35,7 +35,7 @@ export default {
           max_tokens: 16000,
           output_config: { effort: "medium" },
           system: `You find sources for what someone is reading. ${SCREEN_CONTEXT}`,
-          tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 6 }],
+          tools: [{ type: searchTool(settings.model), name: "web_search", max_uses: 6 }],
           messages,
         },
         signal,
@@ -47,6 +47,11 @@ export default {
     return (textOf(message) || "No sources found.") + citedLinks(message);
   },
 };
+
+// The newer search tool filters results better but needs Opus or Sonnet.
+function searchTool(model) {
+  return model.startsWith("claude-haiku") ? "web_search_20250305" : "web_search_20260209";
+}
 
 // Every page the answer cites, as a list at the end.
 function citedLinks(message) {
