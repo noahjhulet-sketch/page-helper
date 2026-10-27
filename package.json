@@ -1,0 +1,8 @@
+{
+  "name": "page-helper",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync-core": "node scripts/sync-core.mjs"
+  }
+}

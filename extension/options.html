@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page Helper Settings</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { align-items: center; padding: 32px 16px; }
+    .card { width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 16px; }
+    h1 { font-size: 20px; margin: 0; }
+    label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; }
+    label small { font-weight: 400; color: var(--muted); }
+    input[type=password], select {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; width: 100%;
+    }
+    .row { display: flex; gap: 8px; align-items: center; }
+    #saved { color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+  <form id="form" class="card">
+    <h1>Page Helper settings</h1>
+
+    <label>
+      Anthropic API key
+      <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…">
+      <small>Create one at console.anthropic.com → API Keys. It is stored only in this browser and sent only to api.anthropic.com.</small>
+    </label>
+
+    <label>
+      Model
+      <select id="model">
+        <option value="claude-opus-5-5">Claude Opus 5.5 — best quality (default)</option>
+        <option value="claude-sonnet-5-5">Claude Sonnet 5.5 — faster, cheaper</option>
+        <option value="claude-haiku-5-5">Claude Haiku 5.5 — fastest, cheapest</option>
+      </select>
+    </label>
+
+    <div class="row">
+      <button type="submit" class="primary">Save</button>
+      <span id="saved" role="status"></span>
+    </div>
+  </form>
+  <script type="module" src="options.js"></script>
+</body>
+</html>

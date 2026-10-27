@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page Helper</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="page-info">
+      <div id="page-title" class="page-title">Loading…</div>
+      <div id="page-url" class="page-url"></div>
+    </div>
+    <button id="open-settings" class="icon-btn" title="Settings" aria-label="Settings">⚙</button>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="summary" aria-selected="true">Summary</button>
+    <button role="tab" data-tab="blanks">Blanks</button>
+    <button role="tab" data-tab="sources">Sources</button>
+    <button role="tab" data-tab="ask">Ask</button>
+  </nav>
+
+  <div id="key-warning" class="notice" hidden>
+    Add your Anthropic API key to get started. <button id="key-warning-btn" class="link-btn">Open settings</button>
+  </div>
+
+  <main>
+    <section id="tab-summary" class="panel">
+      <div class="controls">
+        <select id="summary-style" aria-label="Summary style">
+          <option value="brief">Brief (3–5 sentences)</option>
+          <option value="points" selected>Key points</option>
+          <option value="detailed">Detailed, by section</option>
+          <option value="simple">Explain simply</option>
+        </select>
+        <button id="summary-run" class="primary">Summarize page</button>
+      </div>
+      <div id="summary-out" class="output empty">Summarize the page you're viewing, or highlight text first to summarize just that.</div>
+    </section>
+
+    <section id="tab-blanks" class="panel" hidden>
+      <div class="controls">
+        <button id="blanks-run" class="primary">Find &amp; answer blanks</button>
+        <button id="blanks-fill" hidden>Fill answers into page</button>
+      </div>
+      <div id="blanks-out" class="output empty">Finds empty fields and "____" gaps on the page, suggests an answer for each, and explains why. You choose whether to write them into the page.</div>
+    </section>
+
+    <section id="tab-sources" class="panel" hidden>
+      <div class="controls">
+        <select id="sources-kind" aria-label="Kind of sources">
+          <option value="similar" selected>Similar articles</option>
+          <option value="primary">Primary &amp; academic sources</option>
+          <option value="opposing">Other viewpoints</option>
+          <option value="factcheck">Fact-check claims</option>
+        </select>
+        <button id="sources-run" class="primary">Find sources</button>
+      </div>
+      <div id="sources-out" class="output empty">Searches the web for sources related to this page.</div>
+      <ul id="sources-links" class="links"></ul>
+    </section>
+
+    <section id="tab-ask" class="panel" hidden>
+      <div id="chat" class="chat">
+        <div class="output empty">Ask anything about this page. Highlighted text is included automatically.</div>
+      </div>
+      <form id="ask-form" class="ask-form">
+        <textarea id="ask-input" rows="2" placeholder="Ask about this page…"></textarea>
+        <div class="ask-actions">
+          <button type="button" id="ask-clear">New chat</button>
+          <button type="submit" class="primary">Send</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <div id="status" class="status" hidden></div>
+
+  <script type="module" src="sidepanel.js"></script>
+</body>
+</html>
