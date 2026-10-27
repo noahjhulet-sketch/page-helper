@@ -23,10 +23,11 @@ ipcMain.on("bubble:ask", (e, question) => from(e)?.handlers.onAsk?.(question));
 ipcMain.on("bubble:choose", (e, { actionId, question }) => from(e)?.handlers.onChoose?.(actionId, question));
 ipcMain.on("bubble:attach", (e, how) => from(e)?.handlers.onAttach?.(how));
 ipcMain.on("bubble:remove-pending", (e, position) => from(e)?.handlers.onRemovePending?.(position));
+ipcMain.on("bubble:decide", (e, { turn, action, approved }) => from(e)?.handlers.onDecide?.(turn, action, approved));
 
 // Opens a bubble, first closing the previous one unless it's pinned.
 // Handlers: onAsk(question), onChoose(actionId, question), onAttach("snip" | "clipboard"),
-// onRemovePending(position), onClose().
+// onRemovePending(position), onDecide(turn, action, approved), onClose().
 export function openBubble(options) {
   if (latest && !latest.state.pinned) latest.close();
   latest = new Bubble(options);
@@ -101,6 +102,12 @@ class Bubble {
     this.send();
   }
 
+  // Things done (or waiting to be approved) on the computer during an answer.
+  setActions(index, actions) {
+    this.state.turns[index].actions = actions.map((a) => ({ ...a }));
+    this.send();
+  }
+
   setPending(pending) {
     Object.assign(this.state, { pending, notice: "" });
     this.send();
@@ -165,8 +172,8 @@ class Bubble {
     if (this.loaded && !this.closed) this.win.webContents.send("bubble:update", this.state);
   }
 
-  #turn({ question, label, attachments = [] }, markdown, status) {
-    return { question, label, attachments, markdown, html: renderMarkdown(markdown), status, error: "" };
+  #turn({ question, label, attachments = [], actions = [] }, markdown, status) {
+    return { question, label, attachments, actions, markdown, html: renderMarkdown(markdown), status, error: "" };
   }
 }
 

@@ -4,8 +4,9 @@
 // finished answer.
 
 import { randomUUID } from "node:crypto";
-import { isCancelled, streamMessage } from "../../core/claude.js";
+import { isCancelled, streamFullMessage, textOf } from "../../core/claude.js";
 import { sourceBlock } from "../actions/_shared.js";
+import { toolDefinitions } from "./abilities.js";
 import { menuItems } from "./actions.js";
 import { openBubble } from "./bubbles.js";
 
@@ -15,6 +16,16 @@ const CHAT_SYSTEM =
   "When they have, base your answers on those first and say when you add outside knowledge. " +
   "If an image is too small or blurry to read, say so instead of guessing.";
 
+const ABILITIES_NOTE =
+  " You can also do a few things on the user's computer with your tools: open an app, open a website or a search, " +
+  "put text into Notepad, or copy text to the clipboard. Only use them when the user asks you to do something like that. " +
+  "The user sees each action and approves or skips it; if they skip one, don't try it again unless they ask. " +
+  "You can't click or type inside other apps.";
+
+const MAX_STEPS = 6; // tool uses in one answer, so a confused reply can't loop forever
+
+const join = (a, b) => (a && b ? `${a}\n\n${b}` : a || b);
+
 // "Explain", or a question typed into Ask or the chat.
 function titleFor({ question, actionId, label }) {
   if (!question) return label;
@@ -22,16 +33,20 @@ function titleFor({ question, actionId, label }) {
 }
 
 export class Session {
-  // `app` provides: actions, settings(), near(), setMascotState(state, ms), save(session).
+  // `app` provides: actions, abilities, abilitiesOn(), settings(), near(),
+  // setMascotState(state, ms), save(session), attach(session, how), and optionally
+  // stream (a stand-in for the API call, used by the smoke test).
   // A source is { input, thumbnail, preview } (see actions/_shared.js for input).
-  // A turn is a finished answer: { question, actionId, label, markdown, sources }, where
-  // `sources` lists the indexes of the sources sent with that question.
+  // A turn is a finished answer: { question, actionId, label, markdown, sources, actions }, where
+  // `sources` lists the indexes of the sources sent with that question and `actions`
+  // the things done on the computer: { icon, label, status, detail }.
   constructor(app, { id = randomUUID(), createdAt = Date.now(), input, thumbnail = "", preview = "", sources, turns = [] }) {
     Object.assign(this, { app, id, createdAt, turns });
     this.sources = sources ?? (input ? [{ input, thumbnail, preview }] : []);
     this.pending = []; // sources attached since the last question
     this.bubble = null;
     this.controller = null;
+    this.decisions = new Map(); // "turn:action" → resolve(approved), for actions awaiting approval
   }
 
   get title() {
@@ -56,6 +71,7 @@ export class Session {
       onAsk: (q) => this.ask(q),
       onAttach: (how) => this.app.attach(this, how),
       onRemovePending: (i) => this.removePending(i),
+      onDecide: (turn, action, approved) => this.decisions.get(`${turn}:${action}`)?.(approved),
       onClose: () => this.controller?.abort(),
     });
     if (actionId) this.runTool(actionId, question);
@@ -76,14 +92,7 @@ export class Session {
     const sources = this.pending;
     this.pending = [];
     this.#showPending();
-    this.#run({ question, actionId: null, label: "Chat", sources }, ({ settings, onText, signal }) =>
-      streamMessage(
-        settings,
-        { max_tokens: 16000, output_config: { effort: "medium" }, system: CHAT_SYSTEM, messages: this.#conversation(question, sources) },
-        onText,
-        signal,
-      ),
-    );
+    this.#run({ question, actionId: null, label: "Chat", sources }, (options) => this.#chat(question, sources, options));
   }
 
   // Adds a snip or clipboard source to send with the next question.
@@ -124,6 +133,98 @@ export class Session {
     return turn.actionId ? [] : this.#chips(turn.sources);
   }
 
+  // One chat answer. If abilities are on, Claude may ask to do things on the computer:
+  // each request is shown for approval, run (or skipped), and the result sent back
+  // so Claude can carry on.
+  async #chat(question, sources, { settings, onText, signal, index }) {
+    const abilities = this.app.abilitiesOn() ? this.app.abilities : [];
+    const messages = this.#conversation(question, sources);
+    const actions = [];
+    let markdown = "";
+
+    for (let step = 0; step <= MAX_STEPS; step++) {
+      const message = await (this.app.stream ?? streamFullMessage)(
+        settings,
+        {
+          max_tokens: 16000,
+          output_config: { effort: "medium" },
+          system: abilities.length ? CHAT_SYSTEM + ABILITIES_NOTE : CHAT_SYSTEM,
+          ...(abilities.length && { tools: toolDefinitions(abilities) }),
+          messages,
+        },
+        (text) => onText(join(markdown, text)),
+        signal,
+      );
+      markdown = join(markdown, textOf(message));
+      if (message.stop_reason !== "tool_use") {
+        if (message.stop_reason === "max_tokens") markdown += "\n\n*(Response was cut off at the length limit.)*";
+        return { markdown, actions };
+      }
+      if (step === MAX_STEPS) break;
+
+      messages.push({ role: "assistant", content: message.content });
+      const results = [];
+      for (const use of message.content.filter((b) => b.type === "tool_use")) {
+        const { text, isError } = await this.#act(use, abilities, actions, index, signal);
+        results.push({ type: "tool_result", tool_use_id: use.id, content: text, is_error: isError });
+      }
+      messages.push({ role: "user", content: results });
+      onText(markdown);
+    }
+    return { markdown: join(markdown, "*(Stopped: that took too many steps.)*"), actions };
+  }
+
+  // Shows one requested action, waits for Allow or Skip, and runs it if allowed.
+  async #act(use, abilities, actions, turnIndex, signal) {
+    const ability = abilities.find((a) => a.name === use.name);
+    if (!ability) return { text: `There's no tool called ${use.name}.`, isError: true };
+
+    const entry = { icon: ability.icon, label: ability.describe(use.input), status: "waiting", detail: "" };
+    actions.push(entry);
+    const show = () => this.bubble.setActions(turnIndex, actions);
+    show();
+    this.app.setMascotState("listening");
+
+    const approved = await this.#decision(turnIndex, actions.length - 1, signal);
+    if (!approved) {
+      entry.status = "skipped";
+      show();
+      return { text: "The user chose to skip this.", isError: false };
+    }
+    entry.status = "running";
+    show();
+    try {
+      entry.detail = (await ability.run(use.input)) || "Done.";
+      entry.status = "done";
+      return { text: entry.detail, isError: false };
+    } catch (err) {
+      entry.status = "failed";
+      entry.detail = err.message;
+      return { text: `It didn't work: ${err.message}`, isError: true };
+    } finally {
+      show();
+      this.app.setMascotState("thinking");
+    }
+  }
+
+  // Resolves true (Allow) or false (Skip); rejects if the bubble is closed meanwhile.
+  #decision(turnIndex, actionIndex, signal) {
+    const key = `${turnIndex}:${actionIndex}`;
+    return new Promise((resolve, reject) => {
+      const stop = () => {
+        this.decisions.delete(key);
+        reject(signal.reason);
+      };
+      if (signal.aborted) return stop();
+      signal.addEventListener("abort", stop, { once: true });
+      this.decisions.set(key, (approved) => {
+        this.decisions.delete(key);
+        signal.removeEventListener("abort", stop);
+        resolve(approved);
+      });
+    });
+  }
+
   async #run(turn, call) {
     if (this.controller) return; // one answer at a time
     const { bubble } = this;
@@ -134,16 +235,19 @@ export class Session {
     setMascotState("thinking");
 
     try {
-      const markdown = await call({
+      // Tools return Markdown; chats return { markdown, actions }.
+      const result = await call({
         settings: this.app.settings(),
         signal: controller.signal,
+        index,
         onText: (text) => {
           setMascotState("talking");
           bubble.updateTurn(index, text, "streaming");
         },
       });
+      const { markdown, actions = [] } = typeof result === "string" ? { markdown: result } : result;
       bubble.updateTurn(index, markdown, "done");
-      this.turns.push({ ...turn, markdown });
+      this.turns.push({ ...turn, markdown, actions });
       this.app.save(this);
       setMascotState("talking", 1500);
     } catch (err) {
@@ -171,9 +275,16 @@ export class Session {
     for (const t of this.turns) {
       const action = this.app.actions.find((a) => a.id === t.actionId);
       messages.push(user(t.sources, t.question || `${t.label}: ${action?.description ?? ""}`));
-      messages.push({ role: "assistant", content: t.markdown });
+      messages.push({ role: "assistant", content: join(t.markdown, actionsNote(t.actions)) || "(no reply)" });
     }
     messages.push(user(newSources, question));
     return messages;
   }
+}
+
+// Earlier answers are replayed as text, so note what was done on the computer.
+function actionsNote(actions = []) {
+  if (!actions.length) return "";
+  const lines = actions.map((a) => `- ${a.label}: ${a.status === "done" ? a.detail : a.status}`);
+  return `[Actions on the user's computer during this answer]\n${lines.join("\n")}`;
 }

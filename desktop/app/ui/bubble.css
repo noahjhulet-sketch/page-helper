@@ -121,3 +121,24 @@ footer { border-top: 1px solid var(--border); padding: 8px 10px 10px; }
 
 /* Attachments sent with a question, shown above it. */
 .pending.sent { justify-content: flex-end; margin: 10px 0 0; }
+
+/* Things he wants to do on the computer, each approved with Allow or Skip. */
+.actions-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.action-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.action-card.waiting { border-color: var(--accent); background: var(--accent-soft); }
+.action-icon { font-size: 18px; }
+.action-text { flex: 1; min-width: 0; }
+.action-label { font-weight: 600; overflow-wrap: anywhere; }
+.action-detail { font-size: 12.5px; color: var(--error); }
+.action-card button { padding: 4px 12px; }
+.action-status { font-size: 12.5px; color: var(--muted); }
+.action-card.done .action-status { color: #7ee2a8; }
+.action-card.failed .action-status { color: var(--error); }

@@ -17,6 +17,7 @@ async function load() {
   $("hotkey-error").textContent = s.hotkeyError;
   $("hotkey-error").hidden = !s.hotkeyError;
   $("save-history").checked = s.saveHistory;
+  $("allow-actions").checked = s.allowActions;
 }
 
 function mascotOption(mascot, checked) {
@@ -56,6 +57,7 @@ $("remove-key").addEventListener("click", async () => {
 
 $("model").addEventListener("change", () => buddy.saveSettings({ model: $("model").value }));
 $("save-history").addEventListener("change", () => buddy.saveSettings({ saveHistory: $("save-history").checked }));
+$("allow-actions").addEventListener("change", () => buddy.saveSettings({ allowActions: $("allow-actions").checked }));
 
 $("clear-history").addEventListener("click", async () => {
   if (!confirm("Delete every saved snip and answer? This can't be undone.")) return;

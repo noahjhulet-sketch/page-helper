@@ -59,11 +59,17 @@ Heat gives water molecules enough energy to escape into the air as vapor.
 Cooling vapor turns back into tiny droplets, which gather into clouds. See [the USGS water cycle page](https://www.usgs.gov/special-topics/water-science-school).`;
 
 export async function runSmokeTest({
-  mascotWindow, mascots, chooseMascot, setMascotState, snipScreen, useClipboard, newChat, attachTo, showChatBar, openHistoryEntry, openPanel, openBubble, saveEntry, useFakeScreen,
+  mascotWindow, mascots, chooseMascot, setMascotState, snipScreen, useClipboard, newChat, attachTo, showChatBar, openHistoryEntry, openPanel, openBubble, saveEntry, useFakeScreen, useFakeChat,
 }) {
   const out = process.env.SMOKE_OUT || path.join(app.getPath("userData"), "screenshots");
   fs.mkdirSync(out, { recursive: true });
-  const save = async (win, name) => fs.writeFileSync(path.join(out, name), (await win.webContents.capturePage()).toPNG());
+  const save = async (win, name) => {
+    try {
+      fs.writeFileSync(path.join(out, name), (await win.webContents.capturePage()).toPNG());
+    } catch (err) {
+      console.log(`[smoke] FAIL: couldn't capture ${name}: ${err.message}`);
+    }
+  };
   // The newest window showing `page`.
   const findWindow = (page) =>
     BrowserWindow.getAllWindows()
@@ -150,6 +156,17 @@ export async function runSmokeTest({
   await wait(1200);
   await save(chat.win, "bubble-chat.png");
 
+  // A chat where he asks to do something on the computer. A scripted stand-in for
+  // Claude and a harmless pretend ability, so nothing real is opened or written.
+  useFakeChat(fakeClaude(), [FAKE_ABILITY]);
+  newChat("Put a water cycle study guide in Notepad");
+  await wait(1200);
+  await save(findWindow("bubble.html"), "action-waiting.png");
+  await inPage(findWindow("bubble.html"), `[...document.querySelectorAll(".action-card button")].find((b) => b.textContent === "Allow").click()`);
+  await wait(1200);
+  await save(findWindow("bubble.html"), "action-done.png");
+  if (!FAKE_ABILITY.ran) console.log("[smoke] FAIL: the approved action didn't run");
+
   // History with a couple of saved sessions.
   for (const [i, entry] of FAKE_HISTORY.entries()) {
     saveEntry({ ...entry, id: `smoke-${i}`, createdAt: Date.now() - i * 3_600_000 });
@@ -167,6 +184,31 @@ export async function runSmokeTest({
 
   console.log(`Smoke test screenshots saved to ${out}`);
   app.quit();
+}
+
+const FAKE_ABILITY = {
+  name: "pretend_note",
+  icon: "📝",
+  description: "Smoke test only.",
+  input_schema: { type: "object", properties: {}, additionalProperties: false },
+  describe: () => "Open Notepad with “Water cycle study guide”",
+  run() {
+    this.ran = true;
+    return "Saved and opened in Notepad.";
+  },
+};
+
+// Answers like Claude would: first asks to use the pretend ability, then wraps up.
+function fakeClaude() {
+  let calls = 0;
+  return async (_settings, _body, onText) => {
+    calls++;
+    const text = calls === 1 ? "Sure! I'll put a study guide in Notepad for you." : "Done! It's open in Notepad and saved in **Documents\\Page Helper Notes**.";
+    onText(text);
+    const content = [{ type: "text", text }];
+    if (calls === 1) content.push({ type: "tool_use", id: "smoke-1", name: "pretend_note", input: {} });
+    return { content, stop_reason: calls === 1 ? "tool_use" : "end_turn" };
+  };
 }
 
 // Lays screenshots out in a labeled grid and saves that as one image.

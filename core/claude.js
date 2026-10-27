@@ -60,20 +60,27 @@ export async function createMessage({ apiKey, model }, body, signal) {
   }
 }
 
-// Streaming call. Calls onText(fullTextSoFar) as text arrives and returns the final text.
-export async function streamMessage({ apiKey, model }, body, onText, signal) {
+// Streaming call. Calls onText(fullTextSoFar) as text arrives and returns the full
+// message (use this when the reply may ask to use tools).
+export async function streamFullMessage({ apiKey, model }, body, onText, signal) {
   try {
     const stream = client(apiKey).beta.messages.stream(withFallback(model, body), { signal });
     let text = "";
     stream.on("text", (delta) => onText((text += delta)));
     const message = await stream.finalMessage();
     checkStop(message);
-    // Read the final text from the message: if a fallback model took over
-    // mid-answer, the streamed text includes the declined model's partial output.
-    let final = textOf(message);
-    if (message.stop_reason === "max_tokens") final += "\n\n*(Response was cut off at the length limit.)*";
-    return final;
+    return message;
   } catch (err) {
     throw friendlyError(err);
   }
+}
+
+// Streaming call. Calls onText(fullTextSoFar) as text arrives and returns the final text.
+export async function streamMessage(settings, body, onText, signal) {
+  const message = await streamFullMessage(settings, body, onText, signal);
+  // Read the final text from the message: if a fallback model took over
+  // mid-answer, the streamed text includes the declined model's partial output.
+  let final = textOf(message);
+  if (message.stop_reason === "max_tokens") final += "\n\n*(Response was cut off at the length limit.)*";
+  return final;
 }

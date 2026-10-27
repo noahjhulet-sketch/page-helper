@@ -28,6 +28,8 @@ The first time, Settings opens so you can paste your Anthropic API key. After th
 
 **Just chat:** hover over the buddy and a chat bar slides out below him. Move down into it, type anything ("make me a study guide for…") and press Enter. In any chat, **✂️** and **📋** attach a snip or whatever you copied to your next question, so you can hand him your sources as you go.
 
+**Ask him to do things:** in a chat, try "open Notepad with a study guide for…", "find me YouTube videos on…", "open Word", or "copy that summary". He shows a card saying exactly what he'll do, with **Allow** and **Skip**, and nothing happens until you click Allow. Turn it off in Settings → Doing things for you.
+
 Also:
 - **📌 Pin** a bubble to keep it on screen; the next snip opens a new bubble instead of replacing it. Drag bubbles by their top bar.
 - **History** (right-click the buddy → History…) lists past snips and answers. Click one to reopen it and keep asking. It's saved only on this PC and can be turned off in Settings.
@@ -41,7 +43,8 @@ Also:
 |---|---|
 | `core/` | Claude API client (official Anthropic SDK) and Markdown renderer |
 | `desktop/app/` | The Electron app: buddy, bubbles, sessions, history, settings, menus. Pages are in `ui/`, sharing `theme.css` |
-| `desktop/actions/` | One file per tool (see its README to add one) |
+| `desktop/actions/` | One file per tool in the snip menu (see its README to add one) |
+| `desktop/abilities/` | Things he can do on the computer when you ask in a chat (see its README) |
 | `desktop/inputs/` | Where content comes from: the screen snip and the clipboard |
 | `desktop/mascots/` | One folder per mascot (see its README to add your own) |
 | `docs/` | Roadmap and design notes |

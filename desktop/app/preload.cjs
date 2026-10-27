@@ -39,6 +39,7 @@ contextBridge.exposeInMainWorld("buddy", {
   askFollowUp: (question) => ipcRenderer.send("bubble:ask", question),
   attach: (how) => ipcRenderer.send("bubble:attach", how),
   removePending: (position) => ipcRenderer.send("bubble:remove-pending", position),
+  decide: (turn, action, approved) => ipcRenderer.send("bubble:decide", { turn, action, approved }),
   copyAnswer: (index) => ipcRenderer.send("bubble:copy", index),
   pinBubble: () => ipcRenderer.send("bubble:pin"),
   closeBubble: () => ipcRenderer.send("bubble:close"),

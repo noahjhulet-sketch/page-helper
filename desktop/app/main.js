@@ -7,6 +7,7 @@ import path from "node:path";
 import { MODELS } from "../../core/claude.js";
 import { readClipboard } from "../inputs/clipboard.js";
 import { isSnipping, snip } from "../inputs/snip.js";
+import { loadAbilities } from "./abilities.js";
 import { loadActions, menuItems } from "./actions.js";
 import { closeLatestBubble, openBubble, setBubblesOpacity } from "./bubbles.js";
 import { createChatBar, hideChatBar, openChatBar, showChatBar } from "./chat-bar.js";
@@ -65,6 +66,8 @@ const formatKey = (hotkey) => hotkey.replace("Control", "Ctrl");
 // What sessions need from the rest of the app.
 const sessionApp = {
   actions: [],
+  abilities: [],
+  abilitiesOn: () => getSetting("allowActions"),
   settings: () => ({ apiKey: getApiKey(), model: getSetting("model") }),
   near: () => getMascotBounds(),
   setMascotState,
@@ -238,6 +241,7 @@ ipcMain.handle("settings:get", () => ({
   clipboardHotkey: getSetting("clipboardHotkey"),
   hotkeyError: hotkeyErrors.join(" "),
   saveHistory: getSetting("saveHistory"),
+  allowActions: getSetting("allowActions"),
   hasApiKey: hasApiKey(),
   models: MODELS,
   mascots: listMascots().map(({ id, name, description, images }) => ({ id, name, description, image: images.idle })),
@@ -249,6 +253,7 @@ ipcMain.handle("settings:save", (_e, changes) => {
     if (changes.apiKey !== undefined) setApiKey(changes.apiKey.trim());
     if (MODELS.some((m) => m.id === changes.model)) setSettings({ model: changes.model });
     if (typeof changes.saveHistory === "boolean") setSettings({ saveHistory: changes.saveHistory });
+    if (typeof changes.allowActions === "boolean") setSettings({ allowActions: changes.allowActions });
     if (changes.mascot && changes.mascot !== currentMascot()?.id) chooseMascot(changes.mascot);
     return { ok: true };
   } catch (err) {
@@ -268,6 +273,7 @@ if (!isOnlyCopy) {
     app.setAppUserModelId("com.pagehelper.buddy");
     loadSettings();
     sessionApp.actions = await loadActions();
+    sessionApp.abilities = await loadAbilities();
     const mascotWindow = createMascotWindow({
       onActivate: snipScreen,
       onMenu: () => Menu.buildFromTemplate(buildMenu()).popup(),
@@ -299,6 +305,7 @@ if (!isOnlyCopy) {
         openBubble,
         saveEntry,
         useFakeScreen: (capture) => (snipOptions = { capture }),
+        useFakeChat: (stream, abilities) => Object.assign(sessionApp, { stream, abilities: [...sessionApp.abilities, ...abilities] }),
       });
     } else if (!hasApiKey()) {
       openPanel("settings");

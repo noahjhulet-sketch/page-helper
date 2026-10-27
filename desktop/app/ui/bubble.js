@@ -60,6 +60,7 @@ function renderChat(turns) {
         body.className = "md";
         body.innerHTML = turn.html;
         answer.append(body);
+        if (turn.actions.length) answer.append(actionCards(turn.actions, i));
         if (STATUS[turn.status]) answer.append(Object.assign(document.createElement("div"), { className: "status", textContent: STATUS[turn.status] }));
         if (turn.status === "done") answer.append(copyButton(i));
       }
@@ -96,6 +97,36 @@ function chips(attachments, className) {
     row.append(chip);
   }
   return row;
+}
+
+// One card per thing he wants to do on the computer. While it's waiting, Allow and
+// Skip buttons; after that, how it went.
+const ACTION_STATUS = { running: "Working…", done: "Done", skipped: "Skipped", failed: "Didn't work" };
+
+function actionCards(actions, turnIndex) {
+  const list = Object.assign(document.createElement("div"), { className: "actions-list" });
+  actions.forEach((action, actionIndex) => {
+    const card = Object.assign(document.createElement("div"), { className: `action-card ${action.status}` });
+    const text = Object.assign(document.createElement("div"), { className: "action-text" });
+    text.append(Object.assign(document.createElement("div"), { className: "action-label", textContent: action.label }));
+    if (action.status === "failed" && action.detail) {
+      text.append(Object.assign(document.createElement("div"), { className: "action-detail", textContent: action.detail }));
+    }
+    card.append(Object.assign(document.createElement("span"), { className: "action-icon", textContent: action.icon }), text);
+
+    if (action.status === "waiting") {
+      const allow = Object.assign(document.createElement("button"), { type: "button", className: "primary", textContent: "Allow" });
+      const skip = Object.assign(document.createElement("button"), { type: "button", textContent: "Skip" });
+      allow.addEventListener("click", () => buddy.decide(turnIndex, actionIndex, true));
+      skip.addEventListener("click", () => buddy.decide(turnIndex, actionIndex, false));
+      card.append(allow, skip);
+      requestAnimationFrame(() => allow.focus());
+    } else {
+      card.append(Object.assign(document.createElement("span"), { className: "action-status", textContent: ACTION_STATUS[action.status] }));
+    }
+    list.append(card);
+  });
+  return list;
 }
 
 function copyButton(index) {
