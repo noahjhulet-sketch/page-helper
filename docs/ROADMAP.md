@@ -41,7 +41,13 @@ Status: ✅ done · 🔨 in progress · ⏳ next · 💤 later
 - [x] Settings moved to `%APPDATA%\Page Helper` (the old "Electron" folder is migrated automatically)
 - [x] **Checkpoint** passed
 
-## Phase 4: Personality ⏳
+## Phase 3.5: Plain chat ⏳
+Your idea: talk to the buddy without starting from a snip ("make me a study guide", then give it the source).
+- "New chat" from the right-click menu (and a hotkey): an empty bubble you type into
+- Attach a snip or the clipboard partway through a chat, as many as you like
+- Chats saved to History like snips
+
+## Phase 4: Personality
 - Your mascot art dropped into `desktop/mascots/`
 - State animations; wording that matches the chattiness level
 - Study mode for Blanks: hint, then explanation, then answer
@@ -53,8 +59,22 @@ Status: ✅ done · 🔨 in progress · ⏳ next · 💤 later
 - Do-not-disturb in fullscreen apps
 - Installer and launch at login
 
-## 💤 Later, maybe
-- Computer use (clicking and typing for you): every action needs your approval, a panic hotkey stops everything, allowlisted apps only
+## Phase 6: Hands (doing things on the computer when you ask)
+Your idea: fill in text boxes and surveys, open Notepad and paste, find videos.
+Built in two steps, simplest and safest first.
+
+**6a. Quick actions.** The buddy can offer a few specific actions, each shown as a button you click to approve:
+- Open a link or a search (YouTube, Google Scholar, …) in your browser
+- Open Notepad (or a new note) with the answer pasted in
+- Copy an answer to the clipboard
+- Type an answer into the text box you last clicked
+Cheap, fast, and predictable: no screenshots of your screen after the first, no surprise clicks.
+
+**6b. Full computer use.** Claude looks at the screen and clicks and types step by step, for multi-step jobs like a survey.
+- You approve each step (or a whole plan, step by step on screen); a panic hotkey stops everything instantly
+- Works only in apps you've allowed; never in password managers, banking, or anything asking for passwords or payment
+- Never on graded quizzes or tests (academic honesty), and never on school-managed devices
+- Slower and pricier than everything else: each step sends a screenshot, and it needs Opus or Sonnet
 
 ---
 
