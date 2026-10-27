@@ -29,7 +29,7 @@ Status: ✅ done · 🔨 in progress · ⏳ next · 💤 later
 - [x] The box you draw is the preview: only that region is sent
 - [x] **Checkpoint** passed (tested on Haiku)
 
-## Phase 3: Clipboard and chat 🔨
+## Phase 3: Clipboard and chat ✅
 - [x] Follow-up questions in the bubble, keeping the original snip and answers as context
 - [x] Clipboard hotkey (`Ctrl+Alt+Space`) for copied text or images; the bubble offers the tools
   (not `Ctrl+Shift+V`: a global hotkey would block "paste as plain text" in every app)
@@ -39,9 +39,9 @@ Status: ✅ done · 🔨 in progress · ⏳ next · 💤 later
 - [x] Right-click menu: snip, clipboard, History, Model, Mascot
 - [x] Model and history settings apply instantly; only the API key has a Save button
 - [x] Settings moved to `%APPDATA%\Page Helper` (the old "Electron" folder is migrated automatically)
-- [ ] **Checkpoint:** follow-ups, clipboard, history and pinning work with real answers
+- [x] **Checkpoint** passed
 
-## Phase 4: Personality
+## Phase 4: Personality ⏳
 - Your mascot art dropped into `desktop/mascots/`
 - State animations; wording that matches the chattiness level
 - Study mode for Blanks: hint, then explanation, then answer
