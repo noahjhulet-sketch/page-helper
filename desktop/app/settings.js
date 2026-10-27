@@ -19,14 +19,8 @@ const DEFAULTS = {
 let file;
 let data;
 
-// `migrateFrom`: an older settings file to move here if this one doesn't exist yet.
-export function loadSettings({ migrateFrom } = {}) {
+export function loadSettings() {
   file = path.join(app.getPath("userData"), "settings.json");
-  if (migrateFrom && !fs.existsSync(file) && fs.existsSync(migrateFrom)) {
-    fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.copyFileSync(migrateFrom, file);
-    fs.rmSync(migrateFrom);
-  }
   try {
     data = { ...DEFAULTS, ...JSON.parse(fs.readFileSync(file, "utf8")) };
   } catch {
@@ -51,7 +45,12 @@ export function hasApiKey() {
 // Only the main process calls this; the key is never sent to a window.
 export function getApiKey() {
   if (!data.apiKeyEncrypted) return "";
-  return safeStorage.decryptString(Buffer.from(data.apiKeyEncrypted, "base64"));
+  try {
+    return safeStorage.decryptString(Buffer.from(data.apiKeyEncrypted, "base64"));
+  } catch {
+    // The encryption key it was saved with is gone (for example, the data folder was moved).
+    throw new Error("Your saved API key couldn't be unlocked. Paste it again in Settings.");
+  }
 }
 
 export function setApiKey(key) {

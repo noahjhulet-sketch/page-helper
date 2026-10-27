@@ -2,6 +2,7 @@
 // history and settings.
 
 import { app, globalShortcut, ipcMain, Menu, nativeTheme } from "electron";
+import fs from "node:fs";
 import path from "node:path";
 import { MODELS } from "../../core/claude.js";
 import { readClipboard } from "../inputs/clipboard.js";
@@ -25,8 +26,31 @@ app.setName("Page Helper");
 // Settings and history live in %APPDATA%\Page Helper. The smoke test uses a
 // throwaway folder instead so it never touches the real ones.
 app.setPath("userData", smokeTest ? path.join(app.getPath("temp"), "page-helper-smoke-test") : path.join(app.getPath("appData"), "Page Helper"));
-// Early versions saved settings in the generic "Electron" folder.
-const OLD_SETTINGS = path.join(app.getPath("appData"), "Electron", "settings.json");
+// Only one copy of the buddy runs at a time. Take the lock before migrating, so a
+// copy that's already running can't overwrite the files mid-move.
+const isOnlyCopy = app.requestSingleInstanceLock();
+if (isOnlyCopy && !smokeTest) migrateFromElectronFolder();
+
+// Early versions kept settings in the generic "Electron" folder. The saved API key
+// is encrypted with a key kept in that folder's "Local State" file, so that file has
+// to move too, or the API key can't be decrypted. This must run before the app is
+// ready, when Electron loads Local State. Runs once; a marker file records it.
+function migrateFromElectronFolder() {
+  const oldDir = path.join(app.getPath("appData"), "Electron");
+  const newDir = app.getPath("userData");
+  const marker = path.join(newDir, "migrated-from-electron-folder");
+  if (fs.existsSync(marker)) return;
+
+  fs.mkdirSync(newDir, { recursive: true });
+  const oldSettings = path.join(oldDir, "settings.json");
+  const newSettings = path.join(newDir, "settings.json");
+  if (fs.existsSync(oldSettings) && !fs.existsSync(newSettings)) fs.renameSync(oldSettings, newSettings);
+  // Settings here came from the old folder (moved just now, or by the version
+  // before this fix), so bring its encryption key along.
+  const oldLocalState = path.join(oldDir, "Local State");
+  if (fs.existsSync(newSettings) && fs.existsSync(oldLocalState)) fs.copyFileSync(oldLocalState, path.join(newDir, "Local State"));
+  fs.writeFileSync(marker, "");
+}
 
 nativeTheme.themeSource = "dark"; // dark title bars to match the app's look
 
@@ -182,7 +206,7 @@ ipcMain.handle("settings:save", (_e, changes) => {
   }
 });
 
-if (!app.requestSingleInstanceLock()) {
+if (!isOnlyCopy) {
   app.quit();
 } else {
   app.on("second-instance", () => toggleMascot(true));
@@ -192,7 +216,7 @@ if (!app.requestSingleInstanceLock()) {
 
   app.whenReady().then(async () => {
     app.setAppUserModelId("com.pagehelper.buddy");
-    loadSettings({ migrateFrom: smokeTest ? null : OLD_SETTINGS });
+    loadSettings();
     sessionApp.actions = await loadActions();
     const mascotWindow = createMascotWindow({
       onActivate: snipScreen,
