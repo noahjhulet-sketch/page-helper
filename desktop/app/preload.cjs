@@ -14,6 +14,16 @@ contextBridge.exposeInMainWorld("buddy", {
   activate: () => ipcRenderer.send("mascot:activate"),
   openMenu: () => ipcRenderer.send("mascot:menu"),
 
+  hoverMascot: () => ipcRenderer.send("mascot:hover"),
+
+  // Chat bar
+  barAsk: (question) => ipcRenderer.send("bar:ask", question),
+  barSnip: () => ipcRenderer.send("bar:snip"),
+  barClipboard: () => ipcRenderer.send("bar:clipboard"),
+  barClose: () => ipcRenderer.send("bar:close"),
+  onBarShown: (fn) => ipcRenderer.on("bar:shown", () => fn()),
+  onBarClear: (fn) => ipcRenderer.on("bar:clear", () => fn()),
+
   // Snip overlay
   snipInit: () => ipcRenderer.invoke("snip:init"),
   snipSelecting: () => ipcRenderer.send("snip:selecting"),
@@ -26,6 +36,8 @@ contextBridge.exposeInMainWorld("buddy", {
   resizeBubble: (height) => ipcRenderer.send("bubble:resize", height),
   chooseTool: (choice) => ipcRenderer.send("bubble:choose", choice),
   askFollowUp: (question) => ipcRenderer.send("bubble:ask", question),
+  attach: (how) => ipcRenderer.send("bubble:attach", how),
+  removePending: (position) => ipcRenderer.send("bubble:remove-pending", position),
   copyAnswer: (index) => ipcRenderer.send("bubble:copy", index),
   pinBubble: () => ipcRenderer.send("bubble:pin"),
   closeBubble: () => ipcRenderer.send("bubble:close"),

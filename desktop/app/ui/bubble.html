@@ -26,10 +26,16 @@
     <div id="menu" class="menu" hidden></div>
     <main id="chat" class="chat"></main>
 
-    <form id="follow-up" class="follow-up" hidden>
-      <input id="question" type="text" placeholder="Ask a follow-up…" autocomplete="off">
-      <button type="submit" class="primary" aria-label="Send">↵</button>
-    </form>
+    <footer id="footer" hidden>
+      <div id="notice" class="notice" role="status"></div>
+      <div id="pending" class="pending"></div>
+      <form id="follow-up" class="follow-up">
+        <button type="button" id="attach-snip" class="ghost icon-btn" title="Attach a snip of the screen">✂️</button>
+        <button type="button" id="attach-clipboard" class="ghost icon-btn" title="Attach what's on the clipboard">📋</button>
+        <input id="question" type="text" placeholder="Ask a follow-up…" autocomplete="off">
+        <button type="submit" class="primary" aria-label="Send">↵</button>
+      </form>
+    </footer>
   </div>
   <script src="tool-menu.js"></script>
   <script src="bubble.js"></script>

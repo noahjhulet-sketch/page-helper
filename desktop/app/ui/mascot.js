@@ -26,6 +26,7 @@ function setState(next) {
 // The window lets clicks through to whatever is behind it, except over the mascot.
 el.addEventListener("mouseenter", () => {
   buddy.ignoreMouse(false);
+  if (!drag) buddy.hoverMascot(); // shows the chat bar
   if (state === "idle") setState("hover");
 });
 el.addEventListener("mouseleave", () => {

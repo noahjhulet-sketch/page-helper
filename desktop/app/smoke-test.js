@@ -25,8 +25,23 @@ const SAMPLE_FOLLOW_UP =
   "Evaporation goes the other way: liquid water **becomes** vapor. Clouds need vapor to turn back into liquid droplets, which is condensation.";
 
 const FAKE_HISTORY = [
-  { title: "Blanks", thumbnail: "", preview: "", input: { kind: "text", text: "x" }, turns: [{ question: null, actionId: "blanks", label: "Blanks", markdown: "**1.** Water turning into vapor… → **evaporation**" }] },
-  { title: "Summarize", thumbnail: "", preview: "Photosynthesis is the process plants use…", input: { kind: "text", text: "x" }, turns: [{ question: null, actionId: "summarize", label: "Summarize", markdown: "Plants turn light into food." }, { question: "Where?", actionId: null, label: "Follow-up", markdown: "In the leaves." }] },
+  {
+    title: "Blanks",
+    thumbnail: "",
+    preview: "",
+    sources: [{ input: { kind: "text", text: "x" }, thumbnail: "", preview: "" }],
+    turns: [{ question: null, actionId: "blanks", label: "Blanks", sources: [0], markdown: "**1.** Water turning into vapor… → **evaporation**" }],
+  },
+  {
+    title: "Make me a study guide",
+    thumbnail: "",
+    preview: "",
+    sources: [],
+    turns: [
+      { question: "Make me a study guide", actionId: null, label: "Chat", sources: [], markdown: "Sure! What's it on?" },
+      { question: "Photosynthesis", actionId: null, label: "Chat", sources: [], markdown: "## Photosynthesis\n- Light + water + CO₂ → glucose + O₂" },
+    ],
+  },
 ];
 
 const SAMPLE_ANSWER = `**1.** Water turning into vapor because of heat is called ____.
@@ -43,7 +58,9 @@ Heat gives water molecules enough energy to escape into the air as vapor.
 
 Cooling vapor turns back into tiny droplets, which gather into clouds. See [the USGS water cycle page](https://www.usgs.gov/special-topics/water-science-school).`;
 
-export async function runSmokeTest({ mascotWindow, mascots, chooseMascot, snipScreen, useClipboard, openPanel, openBubble, saveEntry, useFakeScreen }) {
+export async function runSmokeTest({
+  mascotWindow, mascots, chooseMascot, snipScreen, useClipboard, newChat, attachTo, showChatBar, openHistoryEntry, openPanel, openBubble, saveEntry, useFakeScreen,
+}) {
   const out = process.env.SMOKE_OUT || path.join(app.getPath("userData"), "screenshots");
   fs.mkdirSync(out, { recursive: true });
   const save = async (win, name) => fs.writeFileSync(path.join(out, name), (await win.webContents.capturePage()).toPNG());
@@ -90,6 +107,16 @@ export async function runSmokeTest({ mascotWindow, mascots, chooseMascot, snipSc
   await wait(1200);
   await save(findWindow("bubble.html"), "bubble-empty-clipboard.png");
 
+  // The chat bar under the buddy, then a plain chat with copied text attached.
+  showChatBar();
+  await wait(300); // before it hides itself: the real pointer isn't near the buddy
+  await save(findWindow("chat-bar.html"), "chat-bar.png");
+  const chatSession = newChat("Make me a study guide for the water cycle");
+  await wait(1200);
+  await attachTo(chatSession, "clipboard", { input: { kind: "text", text: FAKE_COPY }, thumbnail: "", preview: FAKE_COPY.slice(0, 120) });
+  await wait(800);
+  await save(chatSession.bubble.win, "bubble-plain-chat.png");
+
   // A pinned conversation with a follow-up, to check how chats look.
   const chat = openBubble({
     title: "Blanks",
@@ -106,11 +133,14 @@ export async function runSmokeTest({ mascotWindow, mascots, chooseMascot, snipSc
 
   // History with a couple of saved sessions.
   for (const [i, entry] of FAKE_HISTORY.entries()) {
-    saveEntry({ ...entry, id: `smoke-${i}`, createdAt: Date.now() - i * 3_600_000 }, entry.input);
+    saveEntry({ ...entry, id: `smoke-${i}`, createdAt: Date.now() - i * 3_600_000 });
   }
   const history = openPanel("history");
   await wait(1500);
   await save(history, "history.png");
+  openHistoryEntry("smoke-1");
+  await wait(1200);
+  await save(findWindow("bubble.html"), "history-reopened.png");
 
   const settings = openPanel("settings");
   await wait(1500);

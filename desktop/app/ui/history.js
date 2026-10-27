@@ -26,7 +26,7 @@ function row(entry) {
 
   const thumb = Object.assign(document.createElement("div"), { className: "thumb" });
   if (entry.thumbnail) thumb.append(Object.assign(document.createElement("img"), { src: entry.thumbnail, alt: "" }));
-  else thumb.textContent = "📋";
+  else thumb.textContent = entry.preview ? "📋" : "💬"; // copied text, or a plain chat
 
   const text = Object.assign(document.createElement("div"), { className: "text" });
   const answers = entry.answers === 1 ? "1 answer" : `${entry.answers} answers`;

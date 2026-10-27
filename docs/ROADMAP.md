@@ -41,12 +41,13 @@ Status: ✅ done · 🔨 in progress · ⏳ next · 💤 later
 - [x] Settings moved to `%APPDATA%\Page Helper` (the old "Electron" folder is migrated automatically)
 - [x] **Checkpoint** passed
 
-## Phase 3.5: Plain chat ⏳
+## Phase 3.5: Plain chat 🔨
 Your idea: talk to the buddy without starting from a snip ("make me a study guide", then give it the source).
-- A small chat bar appears right below the buddy; type a question and it grows into a chat bubble
-- The bar also has buttons to snip the screen or use the clipboard
-- Attach a snip or the clipboard partway through a chat, as many as you like
-- Chats saved to History like snips
+- [x] Hover over the buddy and a chat bar slides out below him; type a question and it becomes a chat bubble (clicking him still snips)
+- [x] The bar also has ✂️ snip and 📋 clipboard buttons; "New chat" in the right-click menu opens it too
+- [x] ✂️ and 📋 in any chat attach a snip or copied text to your next question, as many as you like
+- [x] Chats and all their attachments saved to History
+- [ ] **Checkpoint:** a real chat, with a source attached partway through
 
 ## Phase 4: Personality
 - Keep the current mascots as the art for now (custom art can come later)

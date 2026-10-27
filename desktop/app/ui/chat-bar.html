@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'">
+  <title>Page Helper chat</title>
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="chat-bar.css">
+</head>
+<body>
+  <form id="bar" class="bar">
+    <input id="question" type="text" placeholder="Ask me anything…" autocomplete="off" aria-label="Ask the buddy">
+    <button type="button" id="snip" class="ghost icon-btn" title="Snip the screen">✂️</button>
+    <button type="button" id="clipboard" class="ghost icon-btn" title="Use what's on the clipboard">📋</button>
+  </form>
+  <script src="chat-bar.js"></script>
+</body>
+</html>

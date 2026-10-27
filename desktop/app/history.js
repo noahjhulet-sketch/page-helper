@@ -1,6 +1,6 @@
 // Saved sessions, kept only on this PC in the app's data folder:
-//   history/<id>/entry.json   title, answers, and copied text
-//   history/<id>/input.png    the snip or copied image, if there was one
+//   history/<id>/entry.json      title, answers, copied text
+//   history/<id>/source-<n>.png  each snip or copied image
 // Only the newest MAX_ENTRIES are kept.
 
 import { app } from "electron";
@@ -15,16 +15,20 @@ const folder = (id) => {
   if (!VALID_ID.test(id)) throw new Error("Invalid history id");
   return path.join(root(), id);
 };
-const imageFile = (id, mediaType) => path.join(folder(id), mediaType === "image/jpeg" ? "input.jpg" : "input.png");
+const imageName = (n, mediaType) => `source-${n}.${mediaType === "image/jpeg" ? "jpg" : "png"}`;
 
-export function saveEntry(entry, input) {
+// `entry.sources` are { input, thumbnail, preview }; images are written to their own files.
+export function saveEntry(entry) {
   const dir = folder(entry.id);
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, "entry.json"), JSON.stringify(entry));
-  if (input.kind === "image") {
-    const file = imageFile(entry.id, input.mediaType);
-    if (!fs.existsSync(file)) fs.writeFileSync(file, Buffer.from(input.data, "base64"));
-  }
+  const sources = entry.sources.map(({ input, thumbnail, preview }, n) => {
+    if (input.kind !== "image") return { input, thumbnail, preview };
+    const file = imageName(n, input.mediaType);
+    const target = path.join(dir, file);
+    if (!fs.existsSync(target)) fs.writeFileSync(target, Buffer.from(input.data, "base64"));
+    return { input: { kind: "image", mediaType: input.mediaType, file }, thumbnail, preview };
+  });
+  fs.writeFileSync(path.join(dir, "entry.json"), JSON.stringify({ ...entry, sources }));
   prune();
 }
 
@@ -41,12 +45,16 @@ export function listEntries() {
   }));
 }
 
-// The entry plus its input, ready to reopen as a session.
+// The entry with its images loaded, ready to reopen as a session.
 export function loadEntry(id) {
-  const entry = JSON.parse(fs.readFileSync(path.join(folder(id), "entry.json"), "utf8"));
-  const input = { ...entry.input };
-  if (input.kind === "image") input.data = fs.readFileSync(imageFile(id, input.mediaType)).toString("base64");
-  return { ...entry, input };
+  const dir = folder(id);
+  const entry = upgrade(JSON.parse(fs.readFileSync(path.join(dir, "entry.json"), "utf8")));
+  const sources = entry.sources.map(({ input, thumbnail, preview }) => {
+    if (input.kind !== "image") return { input, thumbnail, preview };
+    const data = fs.readFileSync(path.join(dir, path.basename(input.file))).toString("base64");
+    return { input: { kind: "image", mediaType: input.mediaType, data }, thumbnail, preview };
+  });
+  return { ...entry, sources };
 }
 
 export function deleteEntry(id) {
@@ -55,6 +63,20 @@ export function deleteEntry(id) {
 
 export function clearHistory() {
   fs.rmSync(root(), { recursive: true, force: true });
+}
+
+// Entries saved before chats could have several sources had one `input`.
+function upgrade(entry) {
+  if (entry.sources) return entry;
+  const { input, thumbnail, preview, turns, ...rest } = entry;
+  const file = input.mediaType === "image/jpeg" ? "input.jpg" : "input.png";
+  return {
+    ...rest,
+    thumbnail,
+    preview,
+    sources: [{ input: input.kind === "image" ? { ...input, file } : input, thumbnail, preview }],
+    turns: turns.map((t, i) => ({ ...t, sources: i === 0 ? [0] : [] })),
+  };
 }
 
 function readAll() {

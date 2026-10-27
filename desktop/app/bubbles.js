@@ -21,9 +21,12 @@ ipcMain.on("bubble:pin", (e) => from(e)?.togglePin());
 ipcMain.on("bubble:close", (e) => from(e)?.close());
 ipcMain.on("bubble:ask", (e, question) => from(e)?.handlers.onAsk?.(question));
 ipcMain.on("bubble:choose", (e, { actionId, question }) => from(e)?.handlers.onChoose?.(actionId, question));
+ipcMain.on("bubble:attach", (e, how) => from(e)?.handlers.onAttach?.(how));
+ipcMain.on("bubble:remove-pending", (e, position) => from(e)?.handlers.onRemovePending?.(position));
 
 // Opens a bubble, first closing the previous one unless it's pinned.
-// Handlers: onAsk(question), onChoose(actionId, question), onClose().
+// Handlers: onAsk(question), onChoose(actionId, question), onAttach("snip" | "clipboard"),
+// onRemovePending(position), onClose().
 export function openBubble(options) {
   if (latest && !latest.state.pinned) latest.close();
   latest = new Bubble(options);
@@ -34,13 +37,19 @@ export function closeLatestBubble() {
   if (latest && !latest.state.pinned) latest.close();
 }
 
+// Hides every bubble without closing it, so they stay out of a screenshot.
+export function setBubblesOpacity(opacity) {
+  for (const bubble of bubbles.values()) bubble.win.setOpacity(opacity);
+}
+
 class Bubble {
   // `menu`: tools to offer before anything has run (used for clipboard content).
   // `near`: the buddy's window bounds. `focus`: take keyboard focus when shown.
   constructor({ title, thumbnail = "", preview = "", menu = null, turns = [], near, focus = false, ...handlers }) {
     this.handlers = handlers;
-    this.state = { title, thumbnail, preview, menu, pinned: false, busy: false, turns: [] };
-    for (const t of turns) this.state.turns.push(this.#turn(t.question, t.label, t.markdown, "done"));
+    // `pending`: attachments waiting to be sent with the next question.
+    this.state = { title, thumbnail, preview, menu, pinned: false, busy: false, turns: [], pending: [], notice: "" };
+    for (const t of turns) this.state.turns.push(this.#turn(t, t.markdown, "done"));
 
     this.win = new BrowserWindow({
       ...placement(near),
@@ -78,9 +87,10 @@ class Bubble {
     return !bubbles.has(this.id);
   }
 
-  // Starts a new answer and returns its index.
-  addTurn({ question, label }) {
-    this.state.turns.push(this.#turn(question, label, "", "thinking"));
+  // Starts a new answer and returns its index. `attachments`: [{ thumbnail, preview }]
+  // sent with the question.
+  addTurn(turn) {
+    this.state.turns.push(this.#turn(turn, "", "thinking"));
     Object.assign(this.state, { menu: null, busy: true });
     this.send();
     return this.state.turns.length - 1;
@@ -89,6 +99,28 @@ class Bubble {
   setTitle(title) {
     this.state.title = title;
     this.send();
+  }
+
+  setPending(pending) {
+    Object.assign(this.state, { pending, notice: "" });
+    this.send();
+  }
+
+  // A short message above the question box, such as "The clipboard is empty".
+  notify(notice) {
+    this.state.notice = notice;
+    this.send();
+    clearTimeout(this.noticeTimer);
+    this.noticeTimer = setTimeout(() => {
+      this.state.notice = "";
+      this.send();
+    }, 3500);
+  }
+
+  focus() {
+    if (this.closed) return;
+    this.win.show();
+    this.win.focus();
   }
 
   updateTurn(index, markdown, status) {
@@ -133,8 +165,8 @@ class Bubble {
     if (this.loaded && !this.closed) this.win.webContents.send("bubble:update", this.state);
   }
 
-  #turn(question, label, markdown, status) {
-    return { question, label, markdown, html: renderMarkdown(markdown), status, error: "" };
+  #turn({ question, label, attachments = [] }, markdown, status) {
+    return { question, label, attachments, markdown, html: renderMarkdown(markdown), status, error: "" };
   }
 }
 

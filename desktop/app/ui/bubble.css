@@ -91,11 +91,33 @@ header button { -webkit-app-region: no-drag; }
 .answer-tools { display: flex; justify-content: flex-end; }
 .answer-tools button { font-size: 12px; padding: 2px 8px; }
 
-.follow-up {
+footer { border-top: 1px solid var(--border); padding: 8px 10px 10px; }
+
+.notice { font-size: 12.5px; color: var(--muted); margin-bottom: 6px; }
+.notice:empty { display: none; }
+
+/* Attachments waiting to go with the next question. */
+.pending { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.pending:empty { display: none; }
+.chip {
   display: flex;
+  align-items: center;
   gap: 6px;
-  padding: 8px 10px 10px;
-  border-top: 1px solid var(--border);
+  max-width: 200px;
+  padding: 3px 4px 3px 3px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  border: 1px solid rgba(124, 92, 255, 0.35);
+  font-size: 12.5px;
 }
+.chip img, .chip .chip-icon { width: 24px; height: 24px; flex: none; border-radius: 5px; object-fit: cover; display: grid; place-items: center; }
+.chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip button { padding: 0 6px; font-size: 12px; line-height: 20px; }
+
+.follow-up { display: flex; gap: 6px; }
 .follow-up input { flex: 1; min-width: 0; }
-.follow-up button { padding: 0 14px; }
+.follow-up button[type="submit"] { padding: 0 14px; }
+.follow-up .icon-btn { padding: 4px 6px; }
+
+/* Attachments sent with a question, shown above it. */
+.pending.sent { justify-content: flex-end; margin: 10px 0 0; }

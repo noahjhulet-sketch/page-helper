@@ -8,11 +8,12 @@ import { MODELS } from "../../core/claude.js";
 import { readClipboard } from "../inputs/clipboard.js";
 import { isSnipping, snip } from "../inputs/snip.js";
 import { loadActions, menuItems } from "./actions.js";
-import { closeLatestBubble, openBubble } from "./bubbles.js";
+import { closeLatestBubble, openBubble, setBubblesOpacity } from "./bubbles.js";
+import { createChatBar, hideChatBar, openChatBar, showChatBar } from "./chat-bar.js";
 import { clearHistory, deleteEntry, listEntries, loadEntry, saveEntry } from "./history.js";
 import { listMascots } from "./mascots.js";
 import {
-  createMascotWindow, getMascotBounds, isMascotVisible, sendToMascot, setMascotOpacity, toggleMascot,
+  createMascotWindow, getMascotBounds, getMascotImageBounds, isMascotVisible, sendToMascot, setMascotOpacity, toggleMascot,
 } from "./mascot-window.js";
 import { openPanel, sendToPanel } from "./panels.js";
 import { Session } from "./session.js";
@@ -69,10 +70,17 @@ const sessionApp = {
   setMascotState,
   save(session) {
     if (!getSetting("saveHistory")) return;
-    saveEntry(session.toEntry(), session.input);
+    saveEntry(session.toEntry());
     sendToPanel("history", "history:changed");
   },
+  attach: attachTo,
 };
+
+// What the snip menu offers when adding a snip to a chat.
+const ATTACH_MENU = [
+  { id: "attach", label: "Attach", icon: "📎", description: "Add it to the chat", needsQuestion: false },
+  { id: "ask", label: "Ask", icon: "💬", description: "Add it and ask about it", needsQuestion: true },
+];
 
 // Sets the buddy's state, optionally going back to idle after `ms`.
 function setMascotState(state, ms) {
@@ -97,28 +105,64 @@ function chooseModel(id) {
   sendToPanel("settings", "settings:changed");
 }
 
+function setOverlaysOpacity(opacity) {
+  setMascotOpacity(opacity);
+  setBubblesOpacity(opacity);
+}
+
+// Snips the screen, offering `menu`. The buddy and his bubbles step out of the
+// screenshot while it's taken. Resolves with the choice, or null if cancelled.
+async function takeSnip(menu) {
+  if (isSnipping()) return null;
+  hideChatBar();
+  setMascotState("selecting");
+  setOverlaysOpacity(0);
+  await wait(80);
+  try {
+    return await snip(menu, snipOptions);
+  } finally {
+    setOverlaysOpacity(1);
+  }
+}
+
 // Hotkey or click: snip part of the screen, then run the chosen tool on it.
 async function snipScreen() {
   if (isSnipping()) return;
   closeLatestBubble();
-  setMascotState("selecting");
-  // Keep the buddy out of its own screenshot.
-  setMascotOpacity(0);
-  await wait(80);
-  let choice;
-  try {
-    choice = await snip(menuItems(sessionApp.actions), snipOptions);
-  } finally {
-    setMascotOpacity(1);
-  }
+  const choice = await takeSnip(menuItems(sessionApp.actions));
   if (!choice) return setMascotState("idle");
   new Session(sessionApp, choice).open({ actionId: choice.actionId, question: choice.question });
+}
+
+// The chat bar: start a conversation from a typed question.
+function newChat(question) {
+  const session = new Session(sessionApp, {});
+  session.open({ question, focus: true });
+  return session;
+}
+
+// The ✂️ and 📋 buttons in a chat: add a snip or the clipboard to the next question.
+// `copied` replaces the real clipboard (the smoke test uses this).
+async function attachTo(session, how, copied) {
+  if (how === "clipboard") {
+    copied ??= readClipboard();
+    if (!copied) return session.bubble.notify("The clipboard is empty. Copy some text or an image first.");
+    session.attach(copied);
+  } else {
+    const choice = await takeSnip(ATTACH_MENU);
+    setMascotState("idle");
+    if (!choice) return session.bubble.focus();
+    session.attach({ input: choice.input, thumbnail: choice.thumbnail, preview: "Snip" });
+    if (choice.actionId === "ask") session.ask(choice.question);
+  }
+  session.bubble.focus();
 }
 
 // Clipboard hotkey: offer the tools for whatever was last copied.
 // `copied` replaces the real clipboard (the smoke test uses this).
 function useClipboard(copied = readClipboard()) {
   if (isSnipping()) return;
+  hideChatBar();
   if (!copied) {
     setMascotState("error", 1600);
     const bubble = openBubble({
@@ -137,6 +181,11 @@ function openHistoryEntry(id) {
   new Session(sessionApp, loadEntry(id)).open();
 }
 
+function showOrHideBuddy(visible = !isMascotVisible()) {
+  if (!visible) hideChatBar();
+  toggleMascot(visible);
+}
+
 function registerHotkeys() {
   globalShortcut.unregisterAll();
   hotkeyErrors = [
@@ -152,6 +201,7 @@ function buildMenu() {
   const mascot = currentMascot()?.id;
   const model = getSetting("model");
   return [
+    { label: "New chat", click: () => openChatBar() },
     { label: "Snip the screen", accelerator: getSetting("hotkey"), registerAccelerator: false, click: () => snipScreen() },
     { label: "Use the clipboard", accelerator: getSetting("clipboardHotkey"), registerAccelerator: false, click: () => useClipboard() },
     { label: "History…", click: () => openPanel("history") },
@@ -164,7 +214,7 @@ function buildMenu() {
       label: "Mascot",
       submenu: listMascots().map((m) => ({ label: m.name, type: "radio", checked: m.id === mascot, click: () => chooseMascot(m.id) })),
     },
-    { label: isMascotVisible() ? "Hide buddy" : "Show buddy", click: () => toggleMascot() },
+    { label: isMascotVisible() ? "Hide buddy" : "Show buddy", click: () => showOrHideBuddy() },
     { label: "Settings…", click: () => openPanel("settings") },
     { type: "separator" },
     { label: "Quit Page Helper", click: () => app.quit() },
@@ -209,7 +259,7 @@ ipcMain.handle("settings:save", (_e, changes) => {
 if (!isOnlyCopy) {
   app.quit();
 } else {
-  app.on("second-instance", () => toggleMascot(true));
+  app.on("second-instance", () => showOrHideBuddy(true));
   // The app lives in the tray, so closing every window must not quit it.
   app.on("window-all-closed", () => {});
   app.on("will-quit", () => globalShortcut.unregisterAll());
@@ -221,8 +271,16 @@ if (!isOnlyCopy) {
     const mascotWindow = createMascotWindow({
       onActivate: snipScreen,
       onMenu: () => Menu.buildFromTemplate(buildMenu()).popup(),
+      onHover: () => isSnipping() || showChatBar(),
+      onDragStart: () => hideChatBar(),
     });
-    createTray({ onClick: () => toggleMascot(), buildMenu });
+    createChatBar({
+      getAnchor: () => getMascotImageBounds(currentMascot().size),
+      onAsk: newChat,
+      onSnip: snipScreen,
+      onClipboard: () => useClipboard(),
+    });
+    createTray({ onClick: () => showOrHideBuddy(), buildMenu });
     registerHotkeys();
 
     if (smokeTest) {
@@ -232,6 +290,10 @@ if (!isOnlyCopy) {
         chooseMascot,
         snipScreen,
         useClipboard,
+        newChat,
+        attachTo,
+        showChatBar,
+        openHistoryEntry,
         openPanel,
         openBubble,
         saveEntry,

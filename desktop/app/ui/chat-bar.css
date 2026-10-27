@@ -1,0 +1,49 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+}
+
+body {
+  padding: 8px; /* room for the shadow */
+  box-sizing: border-box;
+  font: var(--font);
+  color: var(--text);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 0 4px 0 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+.bar:focus-within { border-color: var(--accent); }
+
+/* Slides down out of the buddy when it appears. */
+.bar.appear { animation: appear 160ms ease-out; }
+@keyframes appear {
+  from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+.bar input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  padding: 6px 8px;
+}
+.bar input:focus { border: 0; }
+
+.icon-btn { padding: 4px 7px; border-radius: 999px; font-size: 15px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bar.appear { animation: none; }
+}

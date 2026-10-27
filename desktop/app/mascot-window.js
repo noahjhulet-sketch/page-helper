@@ -6,12 +6,14 @@ import path from "node:path";
 import { getSetting, setSettings } from "./settings.js";
 
 const SIZE = 140; // larger than any mascot, so animations have room
+const BOTTOM_PAD = 14; // space under the mascot inside the window (matches mascot.css)
 const MARGIN = 24;
+const BAR_ROOM = 56; // the default spot leaves room for the chat bar below him
 
 let win;
 let dragTimer = null;
 
-export function createMascotWindow({ onActivate, onMenu }) {
+export function createMascotWindow({ onActivate, onMenu, onHover, onDragStart }) {
   win = new BrowserWindow({
     ...startBounds(),
     transparent: true,
@@ -30,10 +32,14 @@ export function createMascotWindow({ onActivate, onMenu }) {
   win.once("ready-to-show", () => win.showInactive());
 
   ipcMain.on("mascot:ignore-mouse", (_e, ignore) => win.setIgnoreMouseEvents(ignore, { forward: true }));
-  ipcMain.on("mascot:drag-start", (_e, offset) => startDrag(offset));
+  ipcMain.on("mascot:drag-start", (_e, offset) => {
+    onDragStart();
+    startDrag(offset);
+  });
   ipcMain.on("mascot:drag-end", endDrag);
   ipcMain.on("mascot:activate", onActivate);
   ipcMain.on("mascot:menu", onMenu);
+  ipcMain.on("mascot:hover", onHover);
 
   // A monitor was unplugged or rearranged: bring the buddy back if it ended up off screen.
   const keepOnScreen = () => {
@@ -51,6 +57,13 @@ export function sendToMascot(channel, ...args) {
 
 export function getMascotBounds() {
   return win.getBounds();
+}
+
+// Where the mascot himself is on screen: a `size`-pixel square at the bottom
+// center of his window.
+export function getMascotImageBounds(size) {
+  const b = win.getBounds();
+  return { x: b.x + Math.round((SIZE - size) / 2), y: b.y + SIZE - BOTTOM_PAD - size, width: size, height: size };
 }
 
 // Hidden this way (rather than win.hide()) so it can vanish for a screenshot
@@ -78,7 +91,7 @@ function defaultBounds() {
   const { workArea } = screen.getPrimaryDisplay();
   return {
     x: workArea.x + workArea.width - SIZE - MARGIN,
-    y: workArea.y + workArea.height - SIZE - MARGIN,
+    y: workArea.y + workArea.height - SIZE - MARGIN - BAR_ROOM,
     width: SIZE,
     height: SIZE,
   };

@@ -26,6 +26,8 @@ The first time, Settings opens so you can paste your Anthropic API key. After th
 
 **From the clipboard:** copy some text or an image, then press **Ctrl + Alt + Space**. A bubble opens with the same tools.
 
+**Just chat:** hover over the buddy and a chat bar slides out below him. Move down into it, type anything ("make me a study guide for…") and press Enter. In any chat, **✂️** and **📋** attach a snip or whatever you copied to your next question, so you can hand him your sources as you go.
+
 Also:
 - **📌 Pin** a bubble to keep it on screen; the next snip opens a new bubble instead of replacing it. Drag bubbles by their top bar.
 - **History** (right-click the buddy → History…) lists past snips and answers. Click one to reopen it and keep asking. It's saved only on this PC and can be turned off in Settings.

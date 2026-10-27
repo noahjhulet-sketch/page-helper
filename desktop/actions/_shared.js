@@ -11,11 +11,14 @@ export function sourceNote(input) {
     : "The image is a region of the user's screen they selected, or an image they copied. Work only from what's visible. If text is too small or blurry to read, say so instead of guessing.";
 }
 
+// The input as a message content block.
+export function sourceBlock(input) {
+  return input.kind === "text"
+    ? { type: "text", text: `<clipboard>\n${input.text}\n</clipboard>` }
+    : { type: "image", source: { type: "base64", media_type: input.mediaType, data: input.data } };
+}
+
 // The user message content: the input, then the instruction.
 export function userContent(input, instruction) {
-  const source =
-    input.kind === "text"
-      ? { type: "text", text: `<clipboard>\n${input.text}\n</clipboard>` }
-      : { type: "image", source: { type: "base64", media_type: input.mediaType, data: input.data } };
-  return [source, { type: "text", text: instruction }];
+  return [sourceBlock(input), { type: "text", text: instruction }];
 }

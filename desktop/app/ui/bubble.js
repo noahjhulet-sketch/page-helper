@@ -14,6 +14,7 @@ buddy.onBubble((state) => {
   $("thumb").src = state.thumbnail;
   $("thumb").hidden = !state.thumbnail;
   $("thumb-icon").hidden = Boolean(state.thumbnail);
+  $("thumb-icon").textContent = state.preview ? "📋" : "💬"; // copied text, or a plain chat
   $("pin").setAttribute("aria-pressed", String(state.pinned));
   $("card").classList.toggle("pinned", state.pinned);
 
@@ -26,9 +27,11 @@ buddy.onBubble((state) => {
 
   renderChat(state.turns);
 
-  $("follow-up").hidden = state.turns.length === 0;
+  $("footer").hidden = state.turns.length === 0;
+  $("notice").textContent = state.notice;
+  renderPending(state.pending);
   $("question").disabled = state.busy;
-  $("follow-up").querySelector("button").disabled = state.busy;
+  $("follow-up").querySelector("button[type=submit]").disabled = state.busy;
   // Disabling the box while Claude answers drops focus; give it back afterward.
   if (!state.busy && refocus) {
     refocus = false;
@@ -45,6 +48,7 @@ function renderChat(turns) {
   chat.replaceChildren(
     ...turns.flatMap((turn, i) => {
       const parts = [];
+      if (turn.attachments.length) parts.push(chips(turn.attachments, "pending sent"));
       if (turn.question) parts.push(Object.assign(document.createElement("div"), { className: "question", textContent: turn.question }));
 
       const answer = document.createElement("div");
@@ -67,6 +71,33 @@ function renderChat(turns) {
   if (atBottom) chat.scrollTop = chat.scrollHeight;
 }
 
+// Attachments waiting to be sent, each with a remove button.
+function renderPending(pending) {
+  const list = chips(pending, "pending");
+  list.querySelectorAll(".chip").forEach((chip, i) => {
+    const remove = Object.assign(document.createElement("button"), { type: "button", className: "ghost", textContent: "✕", title: "Remove" });
+    remove.addEventListener("click", () => buddy.removePending(i));
+    chip.append(remove);
+  });
+  $("pending").replaceWith(Object.assign(list, { id: "pending" }));
+}
+
+// A row of small chips, one per attachment: thumbnail (or 📋) and a short preview.
+function chips(attachments, className) {
+  const row = Object.assign(document.createElement("div"), { className });
+  for (const a of attachments) {
+    const chip = Object.assign(document.createElement("div"), { className: "chip", title: a.preview });
+    chip.append(
+      a.thumbnail
+        ? Object.assign(document.createElement("img"), { src: a.thumbnail, alt: "" })
+        : Object.assign(document.createElement("span"), { className: "chip-icon", textContent: "📋" }),
+      Object.assign(document.createElement("span"), { textContent: a.thumbnail ? "Snip" : a.preview }),
+    );
+    row.append(chip);
+  }
+  return row;
+}
+
 function copyButton(index) {
   const row = Object.assign(document.createElement("div"), { className: "answer-tools" });
   const button = Object.assign(document.createElement("button"), { type: "button", className: "ghost", textContent: "Copy" });
@@ -85,7 +116,7 @@ function reportHeight() {
   const pad = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--pad"));
   const visible = (el) => (el.hidden ? 0 : el.offsetHeight);
   const height =
-    document.querySelector("header").offsetHeight + visible($("menu")) + $("chat").scrollHeight + visible($("follow-up")) + 2 + pad * 2;
+    document.querySelector("header").offsetHeight + visible($("menu")) + $("chat").scrollHeight + visible($("footer")) + 2 + pad * 2;
   if (Math.abs(height - lastHeight) < 2) return;
   lastHeight = height;
   buddy.resizeBubble(height);
@@ -100,6 +131,8 @@ $("follow-up").addEventListener("submit", (e) => {
   buddy.askFollowUp(question);
 });
 
+$("attach-snip").addEventListener("click", () => buddy.attach("snip"));
+$("attach-clipboard").addEventListener("click", () => buddy.attach("clipboard"));
 $("pin").addEventListener("click", () => buddy.pinBubble());
 $("close").addEventListener("click", () => buddy.closeBubble());
 document.addEventListener("keydown", (e) => {
