@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src data:">
+  <title>Page Helper snip</title>
+  <link rel="stylesheet" href="overlay.css">
+</head>
+<body>
+  <img id="screenshot" alt="" draggable="false">
+  <div id="shade"></div>
+  <div id="box" hidden></div>
+  <div id="hint">Drag a box around what you want help with · <kbd>Esc</kbd> to cancel</div>
+
+  <div id="menu" hidden>
+    <div id="actions" class="actions"></div>
+    <form id="ask-form" class="ask">
+      <input id="question" type="text" placeholder="Ask about this…" autocomplete="off" spellcheck="true">
+      <button type="submit" aria-label="Ask">↵</button>
+    </form>
+  </div>
+
+  <script src="overlay.js"></script>
+</body>
+</html>

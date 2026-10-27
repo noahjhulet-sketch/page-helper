@@ -2,10 +2,15 @@
 
 import { app, globalShortcut, ipcMain, Menu } from "electron";
 import path from "node:path";
-import { MODELS } from "../../core/claude.js";
+import { MODELS, isCancelled } from "../../core/claude.js";
+import { isSnipping, snip } from "../inputs/snip.js";
+import { loadActions, menuItems } from "./actions.js";
+import { closeAnswer, openAnswer } from "./answer-window.js";
 import { listMascots } from "./mascots.js";
-import { createMascotWindow, isMascotVisible, sendToMascot, toggleMascot } from "./mascot-window.js";
-import { getSetting, hasApiKey, loadSettings, setApiKey, setSettings } from "./settings.js";
+import {
+  createMascotWindow, getMascotBounds, isMascotVisible, sendToMascot, setMascotOpacity, toggleMascot,
+} from "./mascot-window.js";
+import { getApiKey, getSetting, hasApiKey, loadSettings, setApiKey, setSettings } from "./settings.js";
 import { openSettingsWindow, sendToSettings } from "./settings-window.js";
 import { runSmokeTest } from "./smoke-test.js";
 import { createTray } from "./tray.js";
@@ -15,7 +20,18 @@ const smokeTest = process.argv.includes("--smoke-test");
 if (smokeTest) app.setPath("userData", path.join(app.getPath("temp"), "page-helper-smoke-test"));
 
 let hotkeyError = "";
-let activateTimer;
+let actions = [];
+let stateTimer;
+let snipOptions = {}; // the smoke test swaps in a fake screenshot here
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Sets the buddy's state, optionally going back to idle after `ms`.
+function setMascotState(state, ms) {
+  clearTimeout(stateTimer);
+  sendToMascot("mascot:state", state);
+  if (ms) stateTimer = setTimeout(() => sendToMascot("mascot:state", "idle"), ms);
+}
 
 function currentMascot() {
   const all = listMascots();
@@ -28,13 +44,54 @@ function chooseMascot(id) {
   sendToSettings("settings:changed");
 }
 
-// Hotkey or click. For now the buddy only shows that it heard you;
-// Phase 2 opens the snipping overlay here.
-function activate() {
-  toggleMascot(true);
-  sendToMascot("mascot:state", "listening");
-  clearTimeout(activateTimer);
-  activateTimer = setTimeout(() => sendToMascot("mascot:state", "idle"), 1200);
+// Hotkey or click: snip part of the screen, then run the chosen tool on it.
+async function activate() {
+  if (isSnipping()) return;
+  closeAnswer();
+  setMascotState("selecting");
+  // Keep the buddy out of its own screenshot.
+  setMascotOpacity(0);
+  await wait(80);
+  let choice;
+  try {
+    choice = await snip(menuItems(actions), snipOptions);
+  } finally {
+    setMascotOpacity(1);
+  }
+  if (choice) runAction(choice);
+  else setMascotState("idle");
+}
+
+async function runAction({ actionId, question, image, thumbnail }) {
+  const action = actions.find((a) => a.id === actionId);
+  const controller = new AbortController();
+  const bubble = openAnswer({
+    title: question ? `${action.label}: ${question}` : action.label,
+    thumbnail,
+    near: getMascotBounds(),
+    onClose: () => controller.abort(),
+  });
+  setMascotState("thinking");
+
+  try {
+    const markdown = await action.run({
+      image,
+      question,
+      settings: { apiKey: getApiKey(), model: getSetting("model") },
+      signal: controller.signal,
+      onText: (text) => {
+        setMascotState("talking");
+        bubble.update(text, "streaming");
+      },
+    });
+    bubble.update(markdown, "done");
+    setMascotState("talking", 1500);
+  } catch (err) {
+    if (controller.signal.aborted || isCancelled(err)) return setMascotState("idle");
+    console.error(err);
+    bubble.fail(err.message);
+    setMascotState("error", 1600);
+  }
 }
 
 function registerHotkey() {
@@ -95,9 +152,10 @@ if (!app.requestSingleInstanceLock()) {
   app.on("window-all-closed", () => {});
   app.on("will-quit", () => globalShortcut.unregisterAll());
 
-  app.whenReady().then(() => {
+  app.whenReady().then(async () => {
     app.setAppUserModelId("com.pagehelper.buddy");
     loadSettings();
+    actions = await loadActions();
     const mascotWindow = createMascotWindow({
       onActivate: activate,
       onMenu: () => Menu.buildFromTemplate(buildMenu()).popup(),
@@ -106,7 +164,15 @@ if (!app.requestSingleInstanceLock()) {
     registerHotkey();
 
     if (smokeTest) {
-      runSmokeTest({ mascotWindow, mascots: listMascots(), chooseMascot, activate, openSettingsWindow });
+      runSmokeTest({
+        mascotWindow,
+        mascots: listMascots(),
+        chooseMascot,
+        activate,
+        openSettingsWindow,
+        openAnswer,
+        useFakeScreen: (capture) => (snipOptions = { capture }),
+      });
     } else if (!hasApiKey()) {
       openSettingsWindow();
     }

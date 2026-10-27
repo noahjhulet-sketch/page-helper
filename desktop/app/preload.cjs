@@ -14,6 +14,19 @@ contextBridge.exposeInMainWorld("buddy", {
   activate: () => ipcRenderer.send("mascot:activate"),
   openMenu: () => ipcRenderer.send("mascot:menu"),
 
+  // Snip overlay
+  snipInit: () => ipcRenderer.invoke("snip:init"),
+  snipSelecting: () => ipcRenderer.send("snip:selecting"),
+  snipDone: (choice) => ipcRenderer.send("snip:done", choice),
+  snipCancel: () => ipcRenderer.send("snip:cancel"),
+  onSnipClear: (fn) => ipcRenderer.on("snip:clear", () => fn()),
+
+  // Answer bubble
+  onAnswer: (fn) => ipcRenderer.on("answer:update", (_e, update) => fn(update)),
+  resizeAnswer: (height) => ipcRenderer.send("answer:resize", height),
+  copyAnswer: () => ipcRenderer.send("answer:copy"),
+  closeAnswer: () => ipcRenderer.send("answer:close"),
+
   // Settings window
   getSettings: () => ipcRenderer.invoke("settings:get"),
   saveSettings: (changes) => ipcRenderer.invoke("settings:save", changes),

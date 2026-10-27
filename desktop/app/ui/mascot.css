@@ -43,6 +43,10 @@ body {
 }
 #mascot[data-state="listening"] img { animation: pop 300ms ease-out; }
 
+#mascot[data-state="thinking"] img { animation: think 1.6s ease-in-out infinite; }
+#mascot[data-state="talking"] img { animation: talk 0.5s ease-in-out infinite; }
+#mascot[data-state="error"] img { animation: shake 0.4s ease-in-out 2; }
+
 #mascot[data-state="dragged"] {
   transform: scale(1.08) rotate(-4deg);
   filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.3));
@@ -53,6 +57,9 @@ body {
 @keyframes sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
 @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 @keyframes pop { from { transform: scale(0.85); } to { transform: scale(1); } }
+@keyframes think { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg) translateY(-3px); } }
+@keyframes talk { 50% { transform: scaleY(0.94) scaleX(1.03); } }
+@keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 
 @media (prefers-reduced-motion: reduce) {
   #mascot img { animation: none !important; }

@@ -1,0 +1,110 @@
+:root {
+  --accent: #7c5cff;
+  --menu-bg: rgba(28, 26, 38, 0.96);
+  --menu-text: #f2f1f8;
+  --menu-muted: #b5b2c9;
+}
+
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  cursor: crosshair;
+  user-select: none;
+  font: 13.5px/1.4 "Segoe UI", system-ui, sans-serif;
+}
+
+#screenshot {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+#shade {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+}
+body.has-box #shade { display: none; }
+
+/* The box shows the screenshot through; its shadow darkens everything else. */
+#box {
+  position: fixed;
+  outline: 2px solid var(--accent);
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+#hint {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--menu-bg);
+  color: var(--menu-text);
+  pointer-events: none;
+}
+body.has-box #hint { display: none; }
+
+kbd {
+  font: 600 12px "Segoe UI", system-ui, sans-serif;
+  padding: 1px 6px;
+  border: 1px solid #5d5a70;
+  border-radius: 5px;
+}
+
+#menu {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--menu-bg);
+  color: var(--menu-text);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  cursor: default;
+}
+
+.actions { display: flex; gap: 4px; }
+
+.actions button, .ask button {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.actions button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 72px;
+  padding: 6px 8px;
+}
+.actions button .icon { font-size: 20px; line-height: 1.2; }
+.actions button:hover, .actions button:focus-visible { background: rgba(255, 255, 255, 0.1); outline: none; }
+
+.ask { display: flex; gap: 4px; }
+.ask input {
+  flex: 1;
+  font: inherit;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: text;
+}
+.ask input::placeholder { color: var(--menu-muted); }
+.ask input:focus { outline: none; border-color: var(--accent); }
+.ask button { padding: 0 10px; background: var(--accent); }

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src data:">
+  <title>Page Helper answer</title>
+  <link rel="stylesheet" href="answer.css">
+</head>
+<body>
+  <div id="card" class="card">
+    <header>
+      <img id="thumb" alt="Your snip">
+      <div class="heading">
+        <div id="title" class="title"></div>
+        <div id="status" class="status" role="status"></div>
+      </div>
+      <button id="copy" title="Copy answer" aria-label="Copy answer" disabled>Copy</button>
+      <button id="close" title="Close (Esc)" aria-label="Close">✕</button>
+    </header>
+    <main id="body"></main>
+  </div>
+  <script src="answer.js"></script>
+</body>
+</html>

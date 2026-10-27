@@ -8,23 +8,26 @@ Status: ✅ done · 🔨 in progress · ⏳ next · 💤 later
 - [x] API client, prompts and Markdown renderer pulled out of the old Chrome extension into `core/`
 - [x] Decided to go desktop-only: the extension was removed (still in git history, first commit)
 
-## Phase 1: Desktop shell 🔨
+## Phase 1: Desktop shell ✅
 - [x] Transparent, always-on-top, draggable mascot window with click-through around it
 - [x] Tray icon and right-click menu: Show/Hide buddy, Mascot, Settings, Quit
-- [x] Global hotkey (`Ctrl+Shift+Space`); for now it only plays the "listening" animation
+- [x] Global hotkey (`Ctrl+Shift+Space`)
 - [x] Settings window: API key (encrypted with Windows DPAPI via `safeStorage`), model, mascot choice
 - [x] Three placeholder mascots, one per chattiness level (see below)
 - [x] Remembers position across restarts; comes back on screen if a monitor is unplugged
 - [x] `npm run smoke-test` screenshot check
-- [ ] **Checkpoint:** switch mascots, drag it around, reboot, buddy comes back where you left it
+- [x] **Checkpoint** passed
 
-## Phase 2: Snip → answer
-- Hotkey freezes the screen; drag a box on the still image
-- Radial menu: Summarize · Explain · Blanks · Sources · Ask
-- Answer streams into a speech bubble
-- Preview of exactly what gets sent before it goes out
-- Multi-monitor and display-scaling support
-- **Checkpoint:** every tool works on real content, on every monitor
+## Phase 2: Snip → answer 🔨
+- [x] Hotkey or click freezes every monitor; drag a box on the still image (Esc cancels)
+- [x] Menu next to the box: Summarize · Explain · Blanks · Sources · Ask (with a question box)
+- [x] Answer streams into a bubble beside the buddy, with a thumbnail of the snip, Copy and Close
+- [x] Closing the bubble cancels the request; links open in your browser
+- [x] Buddy reacts: thinking, talking, error
+- [x] Multi-monitor and display-scaling aware; snips are scaled to Claude's 2576px limit
+- [x] API calls moved to the official Anthropic SDK
+- [x] The box you draw is the preview: only that region is sent
+- [ ] **Checkpoint:** every tool works on real content, on every monitor
 
 ## Phase 3: Clipboard and chat
 - Clipboard hotkey (text or image)
@@ -67,7 +70,7 @@ A missing image falls back to `idle`, so art can be added a little at a time.
 
 | To add | Do this |
 |---|---|
-| A tool | Add a file to `desktop/actions/` (name, icon, prompt, default model). It shows up in the menu. |
+| A tool | Add a file to `desktop/actions/` (see its README for the template). It shows up in the snip menu. |
 | A mascot | Add a folder to `desktop/mascots/` |
 | An input source | Add a file to `desktop/inputs/` |
 

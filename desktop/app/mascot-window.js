@@ -49,6 +49,16 @@ export function sendToMascot(channel, ...args) {
   if (win && !win.isDestroyed()) win.webContents.send(channel, ...args);
 }
 
+export function getMascotBounds() {
+  return win.getBounds();
+}
+
+// Hidden this way (rather than win.hide()) so it can vanish for a screenshot
+// without changing whether the person has chosen to show it.
+export function setMascotOpacity(opacity) {
+  win.setOpacity(opacity);
+}
+
 export function isMascotVisible() {
   return win?.isVisible() ?? false;
 }

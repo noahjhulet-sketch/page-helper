@@ -48,7 +48,10 @@ export function renderMarkdown(src) {
     const bullet = line.match(/^\s*[-*•]\s+(.*)/);
     const numbered = line.match(/^\s*\d+[.)]\s+(.*)/);
 
-    if (heading) {
+    if (/^\s*(-{3,}|\*{3,})\s*$/.test(line)) {
+      flushPara(); closeList();
+      out.push("<hr>");
+    } else if (heading) {
       flushPara(); closeList();
       const level = Math.min(heading[1].length + 1, 4);
       out.push(`<h${level}>${inline(heading[2])}</h${level}>`);
