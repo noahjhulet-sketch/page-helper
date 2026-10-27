@@ -43,13 +43,16 @@ Status: ✅ done · 🔨 in progress · ⏳ next · 💤 later
 
 ## Phase 3.5: Plain chat ⏳
 Your idea: talk to the buddy without starting from a snip ("make me a study guide", then give it the source).
-- "New chat" from the right-click menu (and a hotkey): an empty bubble you type into
+- A small chat bar appears right below the buddy; type a question and it grows into a chat bubble
+- The bar also has buttons to snip the screen or use the clipboard
 - Attach a snip or the clipboard partway through a chat, as many as you like
 - Chats saved to History like snips
 
 ## Phase 4: Personality
-- Your mascot art dropped into `desktop/mascots/`
-- State animations; wording that matches the chattiness level
+- Keep the current mascots as the art for now (custom art can come later)
+- Drag physics: the buddy tilts and sways with the motion as you move him, then settles
+- Expressions per state: thinking (eyes up, "…" bubble), talking (mouth moves), listening (wide eyes), error (worried), sleeping (closed eyes, Zzz), being dragged (surprised)
+- Wording that matches the chattiness level
 - Study mode for Blanks: hint, then explanation, then answer
 - "Graded work" toggle: Blanks becomes explain-only
 
