@@ -1,0 +1,101 @@
+// The floating buddy: a small transparent window that stays on top of everything.
+// Clicks pass through it except over the mascot itself.
+
+import { BrowserWindow, ipcMain, screen } from "electron";
+import path from "node:path";
+import { getSetting, setSettings } from "./settings.js";
+
+const SIZE = 140; // larger than any mascot, so animations have room
+const MARGIN = 24;
+
+let win;
+let dragTimer = null;
+
+export function createMascotWindow({ onActivate, onMenu }) {
+  win = new BrowserWindow({
+    ...startBounds(),
+    transparent: true,
+    backgroundColor: "#00000000",
+    frame: false,
+    resizable: false,
+    skipTaskbar: true,
+    hasShadow: false,
+    focusable: false,
+    show: false,
+    webPreferences: { preload: path.join(import.meta.dirname, "preload.cjs") },
+  });
+  win.setAlwaysOnTop(true, "screen-saver");
+  win.setIgnoreMouseEvents(true, { forward: true });
+  win.loadFile(path.join(import.meta.dirname, "ui", "mascot.html"));
+  win.once("ready-to-show", () => win.showInactive());
+
+  ipcMain.on("mascot:ignore-mouse", (_e, ignore) => win.setIgnoreMouseEvents(ignore, { forward: true }));
+  ipcMain.on("mascot:drag-start", (_e, offset) => startDrag(offset));
+  ipcMain.on("mascot:drag-end", endDrag);
+  ipcMain.on("mascot:activate", onActivate);
+  ipcMain.on("mascot:menu", onMenu);
+
+  // A monitor was unplugged or rearranged: bring the buddy back if it ended up off screen.
+  const keepOnScreen = () => {
+    if (!isOnScreen(win.getBounds())) win.setBounds(defaultBounds());
+  };
+  screen.on("display-removed", keepOnScreen);
+  screen.on("display-metrics-changed", keepOnScreen);
+
+  return win;
+}
+
+export function sendToMascot(channel, ...args) {
+  if (win && !win.isDestroyed()) win.webContents.send(channel, ...args);
+}
+
+export function isMascotVisible() {
+  return win?.isVisible() ?? false;
+}
+
+export function toggleMascot(visible = !isMascotVisible()) {
+  if (visible) win.showInactive();
+  else win.hide();
+}
+
+function startBounds() {
+  const saved = getSetting("position");
+  return saved && isOnScreen(saved) ? { ...saved, width: SIZE, height: SIZE } : defaultBounds();
+}
+
+// Bottom-right corner of the main monitor, above the taskbar.
+function defaultBounds() {
+  const { workArea } = screen.getPrimaryDisplay();
+  return {
+    x: workArea.x + workArea.width - SIZE - MARGIN,
+    y: workArea.y + workArea.height - SIZE - MARGIN,
+    width: SIZE,
+    height: SIZE,
+  };
+}
+
+function isOnScreen({ x, y }) {
+  const cx = x + SIZE / 2;
+  const cy = y + SIZE / 2;
+  return screen.getAllDisplays().some(({ workArea: a }) => cx >= a.x && cx < a.x + a.width && cy >= a.y && cy < a.y + a.height);
+}
+
+function startDrag({ offsetX, offsetY }) {
+  clearInterval(dragTimer);
+  // Follow the cursor itself rather than the window's mouse events, which stop
+  // when a fast drag outruns the window.
+  dragTimer = setInterval(() => {
+    const p = screen.getCursorScreenPoint();
+    // setBounds with a fixed size: setPosition can resize the window when it
+    // crosses monitors with different display scaling.
+    win.setBounds({ x: p.x - offsetX, y: p.y - offsetY, width: SIZE, height: SIZE });
+  }, 16);
+}
+
+function endDrag() {
+  clearInterval(dragTimer);
+  dragTimer = null;
+  if (!isOnScreen(win.getBounds())) win.setBounds(defaultBounds());
+  const { x, y } = win.getBounds();
+  setSettings({ position: { x, y } });
+}

@@ -6,6 +6,12 @@
 const API_URL = "https://api.anthropic.com/v1/messages";
 export const DEFAULT_MODEL = "claude-opus-5-5";
 
+export const MODELS = [
+  { id: "claude-opus-5-5", label: "Claude Opus 5.5 — best quality (default)" },
+  { id: "claude-sonnet-5-5", label: "Claude Sonnet 5.5 — faster, cheaper" },
+  { id: "claude-haiku-5-5", label: "Claude Haiku 5.5 — fastest, cheapest" },
+];
+
 function buildRequest({ apiKey, model }, body) {
   const headers = {
     "content-type": "application/json",

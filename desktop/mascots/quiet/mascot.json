@@ -1,0 +1,8 @@
+{
+  "name": "Quiet",
+  "description": "Results only. Barely moves.",
+  "chattiness": "quiet",
+  "motion": "calm",
+  "size": 56,
+  "order": 1
+}

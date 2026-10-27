@@ -1,0 +1,59 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* The mascot sits at the bottom-center of its window, leaving room above to bounce. */
+body {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 14px;
+  box-sizing: border-box;
+}
+
+#mascot {
+  width: var(--size, 72px);
+  height: var(--size, 72px);
+  cursor: grab;
+  transition: transform 150ms ease, filter 150ms ease;
+}
+
+#mascot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transform-origin: 50% 100%;
+}
+
+/* Idle motion, chosen by each mascot's "motion" setting. */
+#mascot[data-motion="calm"][data-state="idle"] img { animation: breathe 4s ease-in-out infinite; }
+#mascot[data-motion="gentle"][data-state="idle"] img { animation: sway 3s ease-in-out infinite; }
+#mascot[data-motion="bouncy"][data-state="idle"] img { animation: bounce 1.4s ease-in-out infinite; }
+
+#mascot[data-state="hover"] { transform: scale(1.06); }
+
+#mascot[data-state="listening"] {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 8px rgba(124, 92, 255, 0.9));
+}
+#mascot[data-state="listening"] img { animation: pop 300ms ease-out; }
+
+#mascot[data-state="dragged"] {
+  transform: scale(1.08) rotate(-4deg);
+  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.3));
+  cursor: grabbing;
+}
+
+@keyframes breathe { 50% { transform: scale(1.03); } }
+@keyframes sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes pop { from { transform: scale(0.85); } to { transform: scale(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  #mascot img { animation: none !important; }
+}

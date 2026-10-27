@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src file: data:">
+  <title>Page Helper Settings</title>
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <h1>Page Helper settings</h1>
+
+  <section>
+    <h2>Mascot</h2>
+    <p class="hint">Each mascot has its own level of chattiness. Changes apply right away.</p>
+    <div id="mascots" class="mascots" role="radiogroup" aria-label="Mascot"></div>
+  </section>
+
+  <form id="form">
+    <section>
+      <h2>Claude</h2>
+      <label>
+        Anthropic API key
+        <div class="row">
+          <input id="api-key" type="password" autocomplete="off" spellcheck="false">
+          <button type="button" id="remove-key" hidden>Remove</button>
+        </div>
+        <small>Create one at console.anthropic.com → API Keys. It's stored encrypted on this PC and sent only to api.anthropic.com.</small>
+      </label>
+      <label>
+        Model
+        <select id="model"></select>
+      </label>
+    </section>
+
+    <section>
+      <h2>Hotkey</h2>
+      <p><kbd id="hotkey"></kbd> wakes the buddy from anywhere.</p>
+      <p id="hotkey-error" class="error" hidden></p>
+    </section>
+
+    <div class="row">
+      <button type="submit" class="primary">Save</button>
+      <span id="status" role="status"></span>
+    </div>
+  </form>
+
+  <script src="settings.js"></script>
+</body>
+</html>

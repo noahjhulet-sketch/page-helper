@@ -3,6 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "sync-core": "node scripts/sync-core.mjs"
+    "start": "electron desktop/app/main.js",
+    "smoke-test": "electron desktop/app/main.js --smoke-test"
+  },
+  "devDependencies": {
+    "electron": "44.10.0"
   }
 }

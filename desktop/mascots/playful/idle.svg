@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Placeholder: a star with big eyes, blush and an open smile -->
+  <path d="M50 8 L66.5 31.3 L93.7 39.8 L76.6 62.7 L77 91.2 L50 82 L23 91.2 L23.4 62.7 L6.3 39.8 L33.5 31.3 Z"
+        fill="#FFB020" stroke="#FFB020" stroke-width="8" stroke-linejoin="round"/>
+  <circle cx="40" cy="50" r="7.5" fill="#FFFFFF"/>
+  <circle cx="60" cy="50" r="7.5" fill="#FFFFFF"/>
+  <circle cx="41" cy="51" r="4" fill="#3A2200"/>
+  <circle cx="61" cy="51" r="4" fill="#3A2200"/>
+  <circle cx="42.5" cy="49" r="1.4" fill="#FFFFFF"/>
+  <circle cx="62.5" cy="49" r="1.4" fill="#FFFFFF"/>
+  <circle cx="31" cy="61" r="4" fill="#FF7A59" opacity="0.6"/>
+  <circle cx="69" cy="61" r="4" fill="#FF7A59" opacity="0.6"/>
+  <path d="M43 62 q7 10 14 0 Z" fill="#5A2A00" stroke="#5A2A00" stroke-width="2" stroke-linejoin="round"/>
+</svg>

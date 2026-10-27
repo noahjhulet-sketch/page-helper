@@ -3,21 +3,20 @@
 Each phase ends with a checkpoint: you try it, then we move on.
 Status: ✅ done · 🔨 in progress · ⏳ next · 💤 later
 
-## Phase 0: Shared core 🔨
-Move the extension into `extension/`, pull shared code into `core/`, add git.
+## Phase 0: Shared core ✅
 - [x] Project moved out of OneDrive to `C:\Users\jorda\Projects\Page Helper`
-- [x] `core/claude.js` (API client), `core/prompts.js`, `core/markdown.js`
-- [x] `npm run sync-core` copies `core/` into the extension
-- [ ] **Checkpoint:** reload the extension from `extension/` and confirm all four tools work
+- [x] API client, prompts and Markdown renderer pulled out of the old Chrome extension into `core/`
+- [x] Decided to go desktop-only: the extension was removed (still in git history, first commit)
 
-## Phase 1: Desktop shell ⏳
-- Transparent, always-on-top, draggable mascot window with click-through around it
-- Tray icon: Settings, Hide buddy, Quit
-- Global hotkey (`Ctrl+Shift+Space`)
-- Settings window: API key (encrypted with Windows DPAPI via `safeStorage`), model, mascot choice
-- Three placeholder mascots, one per chattiness level (see below)
-- Remembers position across restarts
-- **Checkpoint:** switch mascots, reboot, buddy comes back where you left it
+## Phase 1: Desktop shell 🔨
+- [x] Transparent, always-on-top, draggable mascot window with click-through around it
+- [x] Tray icon and right-click menu: Show/Hide buddy, Mascot, Settings, Quit
+- [x] Global hotkey (`Ctrl+Shift+Space`); for now it only plays the "listening" animation
+- [x] Settings window: API key (encrypted with Windows DPAPI via `safeStorage`), model, mascot choice
+- [x] Three placeholder mascots, one per chattiness level (see below)
+- [x] Remembers position across restarts; comes back on screen if a monitor is unplugged
+- [x] `npm run smoke-test` screenshot check
+- [ ] **Checkpoint:** switch mascots, drag it around, reboot, buddy comes back where you left it
 
 ## Phase 2: Snip → answer
 - Hotkey freezes the screen; drag a box on the still image

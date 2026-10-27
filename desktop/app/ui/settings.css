@@ -1,0 +1,84 @@
+:root {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --text: #1d1b26;
+  --muted: #6b6880;
+  --border: #dddbe8;
+  --accent: #7c5cff;
+  --error: #c43d3d;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #17161d;
+    --surface: #22212b;
+    --text: #ecebf3;
+    --muted: #a09db3;
+    --border: #3a3847;
+    --accent: #9b82ff;
+    --error: #ff7b7b;
+    color-scheme: dark;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 24px;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.45 "Segoe UI", system-ui, sans-serif;
+}
+
+h1 { font-size: 20px; margin: 0 0 16px; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 0 0 8px; }
+section { margin-bottom: 22px; }
+p { margin: 0 0 8px; }
+.hint, small { color: var(--muted); font-size: 12.5px; }
+
+label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; margin-bottom: 14px; }
+label small { font-weight: 400; }
+
+input, select, button {
+  font: inherit;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+input, select { width: 100%; box-sizing: border-box; }
+button { cursor: pointer; white-space: nowrap; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; padding: 7px 18px; }
+
+.row { display: flex; gap: 8px; align-items: center; }
+#status { color: var(--muted); }
+.error { color: var(--error); }
+
+kbd {
+  font: 600 12.5px "Segoe UI", system-ui, sans-serif;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  padding: 2px 7px;
+}
+
+.mascots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.mascot-option {
+  position: relative;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  margin: 0;
+  padding: 12px 8px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+}
+.mascot-option:has(input:checked) { border-color: var(--accent); }
+.mascot-option:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mascot-option input { position: absolute; opacity: 0; pointer-events: none; }
+.mascot-option img { width: 52px; height: 52px; }
+.mascot-option .desc { font-weight: 400; font-size: 12px; color: var(--muted); }

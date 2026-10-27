@@ -1,0 +1,8 @@
+{
+  "name": "Normal",
+  "description": "A short line before each answer. Sways gently.",
+  "chattiness": "normal",
+  "motion": "gentle",
+  "size": 72,
+  "order": 2
+}
