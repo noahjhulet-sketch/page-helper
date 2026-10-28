@@ -73,6 +73,7 @@ const sessionApp = {
   actions: [],
   abilities: [],
   abilitiesOn: () => getSetting("allowActions"),
+  play: () => openPanel("game"),
   isAutoAllowed: (name) => getSetting("autoAllow").includes(name),
   autoAllow(name) {
     if (!getSetting("autoAllow").includes(name)) setSettings({ autoAllow: [...getSetting("autoAllow"), name] });
@@ -259,6 +260,7 @@ function buildMenu() {
     { label: "Notes…", click: () => openNotes() },
     { label: "Flashcards…", click: () => openFlashcards() },
     { label: "History…", click: () => openPanel("history") },
+    { label: "Play Pop-Up Panic 🎮", click: () => openPanel("game") },
     { type: "separator" },
     {
       label: "Model",

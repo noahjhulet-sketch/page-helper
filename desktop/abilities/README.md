@@ -16,6 +16,7 @@ Web search and page reading aren't abilities here: they're Anthropic's server to
 | `make-flashcards.js` | Makes a flashcard deck from the chat and opens the Flashcards window (doesn't ask: it only opens a window in this app) |
 | `list-notes.js`, `read-note.js` | Look at the titles and text of your notes (don't ask: they only read what you asked about) |
 | `save-to-notes.js` | Makes, adds to or rewrites a note in the Notes window |
+| `play-game.js` | Opens Pop-Up Panic when you're bored or want a break (plain "I'm bored" skips Claude entirely) |
 
 ## Adding one
 

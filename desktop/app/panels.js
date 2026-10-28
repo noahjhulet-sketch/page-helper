@@ -1,4 +1,4 @@
-// Ordinary app windows with a title bar: Settings, History, Flashcards and Notes. One of each at a
+// Ordinary app windows with a title bar: Settings, History, Flashcards, Notes and the game. One of each at a
 // time; opening one that's already open brings it to the front. New ones open in
 // a free spot, so they don't cover the buddy, his bubbles or each other.
 
@@ -12,6 +12,7 @@ const PANELS = {
   history: { title: "Page Helper History", width: 560, height: 680, resizable: true, min: { width: 420, height: 460 } },
   flashcards: { title: "Page Helper Flashcards", width: 600, height: 620, resizable: true, min: { width: 440, height: 460 } },
   notes: { title: "Page Helper Notes", width: 980, height: 680, resizable: true, min: { width: 640, height: 460 } },
+  game: { title: "Pop-Up Panic", width: 540, height: 700, min: { width: 540, height: 700 } },
 };
 
 const open = new Map(); // name → BrowserWindow

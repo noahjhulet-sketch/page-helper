@@ -203,6 +203,24 @@ export async function runSmokeTest({
   await save(findWindow("notes.html"), "notes.png");
   await saveLayout(out, "layout-study.png"); // a chat, Flashcards and Notes open together
 
+  // "I'm bored" opens the game without calling the API (no stand-in needed).
+  useFakeChat(async () => {
+    throw new Error("\"I'm bored\" shouldn't call the API");
+  }, []);
+  newChat("I'm bored");
+  await wait(1500);
+  await save(findWindow("bubble.html"), "bored-chat.png");
+  const game = findWindow("game.html");
+  if (!game) console.log("[smoke] FAIL: \"I'm bored\" didn't open the game");
+  await save(game, "game-title.png");
+  // Play for a few seconds, steering toward whatever is falling.
+  await inPage(game, "startGame(); window.autopilot = setInterval(() => { mode = 'playing'; const next = items.find((i) => !i.type.bad); if (next) player.target = next.x + next.w / 2; }, 50);");
+  await wait(3500);
+  await save(game, "game-playing.png");
+  await inPage(game, "clearInterval(window.autopilot); score = Math.max(score, 180); lives = 1; catchItem({ type: ITEMS.error, x: player.x, y: FLOOR - 40, w: 36, h: 36 }, performance.now());");
+  await wait(600);
+  await save(game, "game-over.png");
+
   // History with a couple of saved sessions.
   for (const [i, entry] of FAKE_HISTORY.entries()) {
     saveEntry({ ...entry, id: `smoke-${i}`, createdAt: Date.now() - i * 3_600_000 });

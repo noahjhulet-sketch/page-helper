@@ -56,6 +56,8 @@ Your ideas: look over PDFs, flashcards from a chat, and a notes app.
 - [x] Notes window: notes saved as files in Documents\Page Helper Notes as you type; search, Markdown preview, word count, "Ask about it"
 - [x] He can list and read your notes (text only) and write in them (new, add to, rewrite) after you allow it
 - [ ] **Checkpoint:** try a real PDF, a deck and a note
+- [x] Pop-Up Panic mini game: "I'm bored" opens it; catch notes and flashcards, dodge error pop-ups and bugs, with his own faces
+- [x] Windows open in free space; his home spot moved to the top-left
 
 ## Phase 4: Personality
 - [x] Keep the current mascots as the art for now (custom art can come later)

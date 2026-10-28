@@ -28,6 +28,14 @@ const ABILITIES_NOTE =
   "The user sees each action and approves or skips it; if they skip one, don't try it again unless they ask. " +
   "You can't click or type inside other apps.";
 
+// "I'm bored", "im so bored!!", "bored": opens the game straight away, no API call.
+const BORED = /^\W*(i'?m|i am)?\s*(so+|really|super|very)?\s*bored\W*$/i;
+const BORED_REPLIES = [
+  "Boredom detected! 🚨 Quick, the pop-ups are escaping. Catch your notes before the errors get you!",
+  "Say no more. 🎮 Pop-Up Panic is loading… try to beat your best score!",
+  "Break time! I'll catch the notes, you steer. Watch out for bugs 🐛",
+];
+
 const MAX_STEPS = 6; // tool uses in one answer, so a confused reply can't loop forever
 
 const join = (a, b) => (a && b ? `${a}\n\n${b}` : a || b);
@@ -39,7 +47,7 @@ function titleFor({ question, actionId, label }) {
 }
 
 export class Session {
-  // `app` provides: actions, abilities, abilitiesOn(), settings(), near(),
+  // `app` provides: actions, abilities, abilitiesOn(), play(), settings(), near(),
   // setMascotState(state, ms), save(session), attach(session, how), attachFiles(session, paths), and optionally
   // stream (a stand-in for the API call, used by the smoke test).
   // A source is { input, thumbnail, preview } (see actions/_shared.js for input).
@@ -96,6 +104,7 @@ export class Session {
 
   ask(question) {
     if (this.controller) return; // one answer at a time
+    if (BORED.test(question) && !this.pending.length) return this.#playGame(question);
     const sources = this.pending;
     this.pending = [];
     this.#showPending();
@@ -141,6 +150,16 @@ export class Session {
   // show what was attached to them.
   #chipsFor(turn) {
     return turn.actionId ? [] : this.#chips(turn.sources);
+  }
+
+  #playGame(question) {
+    this.#run({ question, actionId: null, label: "Chat", sources: [] }, () => {
+      this.app.play();
+      return {
+        markdown: BORED_REPLIES[Math.floor(Math.random() * BORED_REPLIES.length)],
+        actions: [{ icon: "🎮", label: "Open Pop-Up Panic", status: "done", detail: "Opened the game." }],
+      };
+    });
   }
 
   // One chat answer. If abilities are on, Claude may ask to do things on the computer:
@@ -278,6 +297,7 @@ export class Session {
         },
       });
       const { markdown, actions = [] } = typeof result === "string" ? { markdown: result } : result;
+      if (actions.length) bubble.setActions(index, actions);
       bubble.updateTurn(index, markdown, "done");
       this.turns.push({ ...turn, markdown, actions });
       this.app.save(this);

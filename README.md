@@ -38,6 +38,8 @@ The first time, Settings opens so you can paste your Anthropic API key. After th
 
 **Notes:** right-click the buddy → **Notes…** for essays, ideas and brainstorms. Notes save as you type, as files in **Documents\Page Helper Notes**. **Ask about it** starts a chat with that note. In any chat he can look over your notes ("check my essay draft"), reading the text only, and write in them ("add these ideas to my brainstorm") once you allow it.
 
+**Bored?** Tell him "I'm bored" and **Pop-Up Panic** opens (free: no API call). App windows rain down on a tiny desktop and he runs along the taskbar catching 📝 notes, 🃏 flashcards and ⭐ gold stars while dodging ⚠️ error pop-ups and 🐛 bugs. ☕ coffee slows time, 📌 a pin blocks one hit, and the levels speed up from "Monday Morning" to "Finals Week". Arrow keys or the mouse to move, Space to start, P to pause. Also in the right-click menu.
+
 Also:
 - **📌 Pin** a bubble to keep it on screen; the next snip opens a new bubble instead of replacing it. Drag bubbles by their top bar.
 - **History** (right-click the buddy → History…) lists past snips and answers. Click one to reopen it and keep asking. It's saved only on this PC and can be turned off in Settings.
