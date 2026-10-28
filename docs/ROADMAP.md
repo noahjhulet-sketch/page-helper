@@ -68,7 +68,7 @@ Your idea: talk to the buddy without starting from a snip ("make me a study guid
 Your idea: fill in text boxes and surveys, open Notepad and paste, find videos.
 Built in two steps, simplest and safest first.
 
-**6a. Quick actions** 🔨 In any chat, ask him to do something and he shows a card with **Allow / Skip** first:
+**6a. Quick actions** ✅ In any chat, ask him to do something and he shows a card with **Allow / Skip** first:
 - [x] Open an app from a fixed list (Notepad, Calculator, Paint, File Explorer, plus Word, Excel, PowerPoint, OneNote, Chrome, Edge, Firefox, Spotify if installed)
 - [x] Open a website, or a search on the web, YouTube, Google Scholar, Wikipedia or images
 - [x] Put text into Notepad (saved in Documents\Page Helper Notes, then opened)
@@ -77,7 +77,7 @@ Built in two steps, simplest and safest first.
 - [x] "Always allow" per kind of action (e.g. opening apps); review or undo in Settings
 - [x] Chats can search the web and read pages to find a specific source or file, then open its exact link
 - [ ] Type an answer into the text box you last clicked (later, with 6b)
-- [ ] **Checkpoint:** try each one in a real chat
+- [x] **Checkpoint** passed
 
 **6b. Full computer use.** Claude looks at the screen and clicks and types step by step, for multi-step jobs like a survey.
 - You approve each step (or a whole plan, step by step on screen); a panic hotkey stops everything instantly
