@@ -13,6 +13,9 @@ Web search and page reading aren't abilities here: they're Anthropic's server to
 | `search.js` | Opens a search on the web, YouTube, Google Scholar, Wikipedia or images |
 | `write-note.js` | Saves text to `Documents\Page Helper Notes` and opens it in Notepad |
 | `copy-text.js` | Copies text to the clipboard |
+| `make-flashcards.js` | Makes a flashcard deck from the chat and opens the Flashcards window (doesn't ask: it only opens a window in this app) |
+| `list-notes.js`, `read-note.js` | Look at the titles and text of your notes (don't ask: they only read what you asked about) |
+| `save-to-notes.js` | Makes, adds to or rewrites a note in the Notes window |
 
 ## Adding one
 
@@ -21,10 +24,11 @@ export default {
   name: "open_calendar",              // the tool name Claude sees
   icon: "📅",                         // shown on the approval card
   permission: "opening Calendar",     // completes "Always allow …"
+  // askFirst: false,                 // only for abilities that just read or open this app's own windows
   description: "Open the Calendar app. Only when the user asks.",  // tells Claude when to use it
   input_schema: { type: "object", properties: {}, additionalProperties: false },
   describe: (input) => "Open Calendar",  // the approval card's text: say exactly what will happen
-  run(input) {                           // runs only after Allow; return what happened
+  run(input, { chatTitle }) {            // runs only after Allow; return what happened
     return "Opened Calendar.";
   },
 };

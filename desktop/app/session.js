@@ -22,7 +22,8 @@ const WEB_NOTE =
 
 const ABILITIES_NOTE =
   " You can also do a few things on the user's computer with your tools: open an app, open a website or a search, " +
-  "put text into Notepad, or copy text to the clipboard. Only use them when the user asks you to do something like that. " +
+  "put text into Notepad, copy text to the clipboard, read and write the user's notes, and make flashcards. " +
+  "Only use them when the user asks you to do something like that. " +
   "To open a source or file you found, use open_website with its exact link; the browser handles downloads like PDFs. " +
   "The user sees each action and approves or skips it; if they skip one, don't try it again unless they ask. " +
   "You can't click or type inside other apps.";
@@ -39,7 +40,7 @@ function titleFor({ question, actionId, label }) {
 
 export class Session {
   // `app` provides: actions, abilities, abilitiesOn(), settings(), near(),
-  // setMascotState(state, ms), save(session), attach(session, how), and optionally
+  // setMascotState(state, ms), save(session), attach(session, how), attachFiles(session, paths), and optionally
   // stream (a stand-in for the API call, used by the smoke test).
   // A source is { input, thumbnail, preview } (see actions/_shared.js for input).
   // A turn is a finished answer: { question, actionId, label, markdown, sources, actions }, where
@@ -75,6 +76,7 @@ export class Session {
       onChoose: (id, q) => this.runTool(id, q),
       onAsk: (q) => this.ask(q),
       onAttach: (how) => this.app.attach(this, how),
+      onAttachFiles: (paths) => this.app.attachFiles(this, paths),
       onRemovePending: (i) => this.removePending(i),
       onDecide: (turn, action, choice) => this.decisions.get(`${turn}:${action}`)?.(choice),
       onClose: () => this.controller?.abort(),
@@ -129,7 +131,10 @@ export class Session {
   }
 
   #chips(indexes) {
-    return indexes.map((i) => ({ thumbnail: this.sources[i].thumbnail, preview: this.sources[i].preview }));
+    return indexes.map((i) => {
+      const { thumbnail, preview, icon } = this.sources[i];
+      return { thumbnail, preview, icon };
+    });
   }
 
   // A tool's source is already shown in the bubble's header, so only chat questions
@@ -191,7 +196,8 @@ export class Session {
     const ability = abilities.find((a) => a.name === use.name);
     if (!ability) return { text: `There's no tool called ${use.name}.`, isError: true };
 
-    const auto = this.app.isAutoAllowed(ability.name);
+    // Some abilities never ask (they only read, or only open a window in this app).
+    const auto = ability.askFirst === false || this.app.isAutoAllowed(ability.name);
     const entry = {
       icon: ability.icon,
       label: ability.describe(use.input),
@@ -218,7 +224,7 @@ export class Session {
     entry.status = "running";
     show();
     try {
-      entry.detail = (await ability.run(use.input)) || "Done.";
+      entry.detail = (await ability.run(use.input, { chatTitle: this.activeTitle })) || "Done.";
       entry.status = "done";
       return { text: entry.detail, isError: false };
     } catch (err) {
@@ -256,6 +262,8 @@ export class Session {
     const controller = (this.controller = new AbortController());
     const index = bubble.addTurn({ ...turn, attachments: this.#chipsFor(turn) });
     if (!this.turns.length) bubble.setTitle(titleFor(turn));
+    // The chat's name while this answer runs (a new chat is named after its first question).
+    this.activeTitle = this.turns.length ? this.title : titleFor(turn);
     setMascotState("thinking");
 
     try {

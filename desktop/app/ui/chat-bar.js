@@ -10,6 +10,21 @@ $("bar").addEventListener("submit", (e) => {
 });
 $("snip").addEventListener("click", () => buddy.barSnip());
 $("clipboard").addEventListener("click", () => buddy.barClipboard());
+$("file").addEventListener("click", () => buddy.barFiles([]));
+
+// Drop files on the bar to start a chat about them.
+document.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  $("bar").classList.add("dropping");
+});
+document.addEventListener("dragleave", (e) => {
+  if (!e.relatedTarget) $("bar").classList.remove("dropping");
+});
+document.addEventListener("drop", (e) => {
+  e.preventDefault();
+  $("bar").classList.remove("dropping");
+  if (e.dataTransfer.files.length) buddy.barFiles(e.dataTransfer.files);
+});
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") buddy.barClose();
 });

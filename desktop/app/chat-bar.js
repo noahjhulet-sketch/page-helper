@@ -17,7 +17,7 @@ let watchTimer = null;
 let awaySince = null;
 
 // `getAnchor` returns the bounds of the buddy himself (not his whole window).
-export function createChatBar({ getAnchor, onAsk, onSnip, onClipboard }) {
+export function createChatBar({ getAnchor, onAsk, onSnip, onClipboard, onFiles }) {
   anchor = getAnchor;
   win = new BrowserWindow({
     width: WIDTH,
@@ -48,6 +48,11 @@ export function createChatBar({ getAnchor, onAsk, onSnip, onClipboard }) {
     onClipboard();
   }));
   ipcMain.on("bar:close", from(() => hideChatBar()));
+  // Dropped files (paths), or [] for the 📄 button (pick files).
+  ipcMain.on("bar:files", from((paths) => {
+    hideChatBar();
+    onFiles(paths);
+  }));
   return win;
 }
 

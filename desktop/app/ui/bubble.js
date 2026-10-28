@@ -16,6 +16,8 @@ buddy.onBubble((state) => {
   $("thumb-icon").hidden = Boolean(state.thumbnail);
   $("thumb-icon").textContent = state.preview ? "📋" : "💬"; // copied text, or a plain chat
   $("pin").setAttribute("aria-pressed", String(state.pinned));
+  $("flashcards").hidden = state.turns.length === 0;
+  $("flashcards").disabled = state.busy;
   $("card").classList.toggle("pinned", state.pinned);
 
   // Tool menu: shown before anything has run (clipboard content).
@@ -27,8 +29,9 @@ buddy.onBubble((state) => {
 
   renderChat(state.turns);
 
-  $("footer").hidden = state.turns.length === 0;
+  $("footer").hidden = state.turns.length === 0 && state.pending.length === 0 && Boolean(state.menu);
   $("notice").textContent = state.notice;
+  $("question").placeholder = state.turns.length ? "Ask a follow-up…" : "Ask about it…";
   renderPending(state.pending);
   $("question").disabled = state.busy;
   $("follow-up").querySelector("button[type=submit]").disabled = state.busy;
@@ -91,8 +94,8 @@ function chips(attachments, className) {
     chip.append(
       a.thumbnail
         ? Object.assign(document.createElement("img"), { src: a.thumbnail, alt: "" })
-        : Object.assign(document.createElement("span"), { className: "chip-icon", textContent: "📋" }),
-      Object.assign(document.createElement("span"), { textContent: a.thumbnail ? "Snip" : a.preview }),
+        : Object.assign(document.createElement("span"), { className: "chip-icon", textContent: a.icon ?? "📋" }),
+      Object.assign(document.createElement("span"), { textContent: a.preview || "Snip" }),
     );
     row.append(chip);
   }
@@ -170,6 +173,22 @@ $("follow-up").addEventListener("submit", (e) => {
 
 $("attach-snip").addEventListener("click", () => buddy.attach("snip"));
 $("attach-clipboard").addEventListener("click", () => buddy.attach("clipboard"));
+$("attach-file").addEventListener("click", () => buddy.attach("file"));
+
+// Drop files anywhere on the bubble to attach them.
+document.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  document.body.classList.add("dropping");
+});
+document.addEventListener("dragleave", (e) => {
+  if (!e.relatedTarget) document.body.classList.remove("dropping");
+});
+document.addEventListener("drop", (e) => {
+  e.preventDefault();
+  document.body.classList.remove("dropping");
+  if (e.dataTransfer.files.length) buddy.attachFiles(e.dataTransfer.files);
+});
+$("flashcards").addEventListener("click", () => buddy.askFollowUp("Make flashcards covering everything in this conversation."));
 $("pin").addEventListener("click", () => buddy.pinBubble());
 $("close").addEventListener("click", () => buddy.closeBubble());
 document.addEventListener("keydown", (e) => {

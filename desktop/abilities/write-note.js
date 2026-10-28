@@ -1,18 +1,18 @@
-import { app } from "electron";
 import fs from "node:fs";
 import path from "node:path";
+import { notesFolder } from "../app/notes.js";
 import { launch } from "./_apps.js";
 
-// Notes are saved here, so nothing is lost if Notepad is closed without saving.
-const notesFolder = () => path.join(app.getPath("documents"), "Page Helper Notes");
+// Saved in the notes folder, so nothing is lost if Notepad is closed without
+// saving, and it shows up in the Notes window too.
 
 export default {
   name: "write_note",
   icon: "📝",
   permission: "putting text in Notepad",
   description:
-    "Put text into Notepad for the user: saves it as a .txt file in their Documents\\Page Helper Notes folder and opens it. " +
-    "Use this when they ask you to open Notepad with something, paste something into a note, or save something to read later. " +
+    "Put text into the Notepad app for the user: saves it as a .txt file in their Documents\\Page Helper Notes folder and opens it in Notepad. " +
+    "Only use this when they specifically mention Notepad; for notes in general, use save_to_notes. " +
     "Write plain text (Notepad doesn't show Markdown formatting).",
   input_schema: {
     type: "object",

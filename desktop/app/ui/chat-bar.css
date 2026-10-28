@@ -24,7 +24,7 @@ body {
   border-radius: 999px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
 }
-.bar:focus-within { border-color: var(--accent); }
+.bar:focus-within, .bar.dropping { border-color: var(--accent); }
 
 /* Slides down out of the buddy when it appears. */
 .bar.appear { animation: appear 160ms ease-out; }

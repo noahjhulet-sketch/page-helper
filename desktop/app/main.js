@@ -1,15 +1,18 @@
 // Desktop buddy entry point: connects the mascot, hotkeys, menus, sessions,
 // history and settings.
 
-import { app, globalShortcut, ipcMain, Menu, nativeTheme } from "electron";
+import { app, dialog, globalShortcut, ipcMain, Menu, nativeTheme } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import { MODELS } from "../../core/claude.js";
 import { readClipboard } from "../inputs/clipboard.js";
+import { FILE_TYPES, readFileSource } from "../inputs/files.js";
 import { isSnipping, snip } from "../inputs/snip.js";
 import { loadAbilities } from "./abilities.js";
 import { loadActions, menuItems } from "./actions.js";
 import { closeLatestBubble, openBubble, setBubblesOpacity } from "./bubbles.js";
+import { openFlashcards } from "./decks.js";
+import { openNotes, readNote, setAskAboutNote, titleOf } from "./notes.js";
 import { createChatBar, hideChatBar, openChatBar, showChatBar } from "./chat-bar.js";
 import { clearHistory, deleteEntry, listEntries, loadEntry, saveEntry } from "./history.js";
 import { listMascots } from "./mascots.js";
@@ -28,6 +31,8 @@ app.setName("Page Helper");
 // Settings and history live in %APPDATA%\Page Helper. The smoke test uses a
 // throwaway folder instead so it never touches the real ones.
 app.setPath("userData", smokeTest ? path.join(app.getPath("temp"), "page-helper-smoke-test") : path.join(app.getPath("appData"), "Page Helper"));
+// Notes live in Documents; the smoke test keeps its own somewhere else.
+if (smokeTest) app.setPath("documents", path.join(app.getPath("temp"), "page-helper-smoke-test", "Documents"));
 // Only one copy of the buddy runs at a time. Take the lock before migrating, so a
 // copy that's already running can't overwrite the files mid-move.
 const isOnlyCopy = app.requestSingleInstanceLock();
@@ -82,6 +87,7 @@ const sessionApp = {
     sendToPanel("history", "history:changed");
   },
   attach: attachTo,
+  attachFiles,
 };
 
 // What the snip menu offers when adding a snip to a chat.
@@ -149,9 +155,47 @@ function newChat(question) {
   return session;
 }
 
+// Files dropped on a chat, or picked with its 📄 button: add each to the next question.
+// Files that can't be read are skipped with a note in the bubble.
+async function attachFiles(session, paths) {
+  if (!paths.length) {
+    const picked = await dialog.showOpenDialog(session.bubble.win, { properties: ["openFile", "multiSelections"], filters: FILE_TYPES });
+    if (picked.canceled) return;
+    paths = picked.filePaths;
+  }
+  const problems = [];
+  for (const file of paths) {
+    try {
+      session.attach(readFileSource(file));
+    } catch (err) {
+      problems.push(err.message);
+    }
+  }
+  if (problems.length) session.bubble.notify(problems.join(" "));
+  session.bubble.focus();
+}
+
+// "Ask about it" in the Notes window: a new chat with the note attached.
+function chatAboutNote(id) {
+  const session = new Session(sessionApp, {});
+  session.open({ title: "New chat", focus: true });
+  session.attach({ input: { kind: "text", text: readNote(id), name: id }, thumbnail: "", preview: titleOf(id), icon: "🗒️" });
+  return session;
+}
+
+// The chat bar's 📄 button, or files dropped on it: a new chat with them attached,
+// waiting for your question.
+function chatAboutFiles(paths) {
+  const session = new Session(sessionApp, {});
+  session.open({ title: "New chat", focus: true });
+  attachFiles(session, paths);
+  return session;
+}
+
 // The ✂️ and 📋 buttons in a chat: add a snip or the clipboard to the next question.
 // `copied` replaces the real clipboard (the smoke test uses this).
 async function attachTo(session, how, copied) {
+  if (how === "file") return attachFiles(session, []);
   if (how === "clipboard") {
     copied ??= readClipboard();
     if (!copied) return session.bubble.notify("The clipboard is empty. Copy some text or an image first.");
@@ -212,6 +256,8 @@ function buildMenu() {
     { label: "New chat", click: () => openChatBar() },
     { label: "Snip the screen", accelerator: getSetting("hotkey"), registerAccelerator: false, click: () => snipScreen() },
     { label: "Use the clipboard", accelerator: getSetting("clipboardHotkey"), registerAccelerator: false, click: () => useClipboard() },
+    { label: "Notes…", click: () => openNotes() },
+    { label: "Flashcards…", click: () => openFlashcards() },
     { label: "History…", click: () => openPanel("history") },
     { type: "separator" },
     {
@@ -248,7 +294,9 @@ ipcMain.handle("settings:get", () => ({
   saveHistory: getSetting("saveHistory"),
   allowActions: getSetting("allowActions"),
   autoAllow: getSetting("autoAllow"),
-  abilities: sessionApp.abilities.map(({ name, icon, permission }) => ({ name, icon, permission: permission ?? name })),
+  abilities: sessionApp.abilities
+    .filter((a) => a.askFirst !== false)
+    .map(({ name, icon, permission }) => ({ name, icon, permission: permission ?? name })),
   hasApiKey: hasApiKey(),
   models: MODELS,
   mascots: listMascots().map(({ id, name, description, images }) => ({ id, name, description, image: images.idle })),
@@ -285,6 +333,7 @@ if (!isOnlyCopy) {
     loadSettings();
     sessionApp.actions = await loadActions();
     sessionApp.abilities = await loadAbilities();
+    setAskAboutNote(chatAboutNote);
     const mascotWindow = createMascotWindow({
       onActivate: snipScreen,
       onMenu: () => Menu.buildFromTemplate(buildMenu()).popup(),
@@ -296,6 +345,7 @@ if (!isOnlyCopy) {
       onAsk: newChat,
       onSnip: snipScreen,
       onClipboard: () => useClipboard(),
+      onFiles: chatAboutFiles,
     });
     createTray({ onClick: () => showOrHideBuddy(), buildMenu });
     registerHotkeys();
@@ -310,6 +360,10 @@ if (!isOnlyCopy) {
         useClipboard,
         newChat,
         attachTo,
+        attachFiles,
+        chatAboutFiles,
+        openNotes,
+        openFlashcards,
         showChatBar,
         openHistoryEntry,
         openPanel,

@@ -1,4 +1,4 @@
-// Ordinary app windows with a title bar: Settings and History. One of each at a
+// Ordinary app windows with a title bar: Settings, History, Flashcards and Notes. One of each at a
 // time; opening one that's already open brings it to the front.
 
 import { BrowserWindow } from "electron";
@@ -7,6 +7,8 @@ import path from "node:path";
 const PANELS = {
   settings: { title: "Page Helper Settings", width: 500, height: 1000 },
   history: { title: "Page Helper History", width: 560, height: 680, resizable: true },
+  flashcards: { title: "Page Helper Flashcards", width: 600, height: 620, resizable: true },
+  notes: { title: "Page Helper Notes", width: 980, height: 680, resizable: true },
 };
 
 const open = new Map(); // name → BrowserWindow

@@ -49,6 +49,14 @@ Your idea: talk to the buddy without starting from a snip ("make me a study guid
 - [x] Chats and all their attachments saved to History
 - [ ] **Checkpoint:** a real chat, with a source attached partway through
 
+## Phase 7: Study tools 🔨
+Your ideas: look over PDFs, flashcards from a chat, and a notes app.
+- [x] Files in chats: drop PDFs, images or .txt/.md files on a chat or the chat bar, or use 📄; saved with the chat in History
+- [x] Flashcards: ask in a chat (or click 🃏) and he makes a deck from that conversation, on everything or just what you name; Flashcards window to flip, mark Got it / Again, shuffle and review misses; progress saved
+- [x] Notes window: notes saved as files in Documents\Page Helper Notes as you type; search, Markdown preview, word count, "Ask about it"
+- [x] He can list and read your notes (text only) and write in them (new, add to, rewrite) after you allow it
+- [ ] **Checkpoint:** try a real PDF, a deck and a note
+
 ## Phase 4: Personality
 - [x] Keep the current mascots as the art for now (custom art can come later)
 - [x] Drag physics: he swings with the motion as you move him, then wobbles and settles; a little squash when set down

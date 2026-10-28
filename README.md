@@ -32,6 +32,12 @@ The first time, Settings opens so you can paste your Anthropic API key. After th
 
 **Finding sources:** in a chat, ask for something specific ("find me a good source that explains orbitals", "find the PDF of…"). He searches the web, reads the pages, and gives you direct links to the ones that fit. Ask him to open one and he opens that exact page or file. Each search adds a little to the cost of that answer.
 
+**PDFs and files:** drop a PDF (or an image, .txt or .md file) onto any chat bubble or the chat bar, or click **📄**. He reads the whole thing, so you can ask about long readings that don't fit in a snip. Word files: save as PDF first.
+
+**Flashcards:** in a chat, ask "make flashcards on everything" or "just on hybridization", or click **🃏** at the top of the bubble. He builds a deck from that conversation and opens the **Flashcards** window: click or press Space to flip, mark **Got it** or **Again**, then review the ones you missed. Decks are saved (right-click the buddy → Flashcards…).
+
+**Notes:** right-click the buddy → **Notes…** for essays, ideas and brainstorms. Notes save as you type, as files in **Documents\Page Helper Notes**. **Ask about it** starts a chat with that note. In any chat he can look over your notes ("check my essay draft"), reading the text only, and write in them ("add these ideas to my brainstorm") once you allow it.
+
 Also:
 - **📌 Pin** a bubble to keep it on screen; the next snip opens a new bubble instead of replacing it. Drag bubbles by their top bar.
 - **History** (right-click the buddy → History…) lists past snips and answers. Click one to reopen it and keep asking. It's saved only on this PC and can be turned off in Settings.
@@ -46,14 +52,14 @@ Also:
 | `core/` | Claude API client (official Anthropic SDK) and Markdown renderer |
 | `desktop/app/` | The Electron app: buddy, bubbles, sessions, history, settings, menus. Pages are in `ui/`, sharing `theme.css` |
 | `desktop/actions/` | One file per tool in the snip menu (see its README to add one) |
-| `desktop/abilities/` | Things he can do on the computer when you ask in a chat (see its README) |
+| `desktop/abilities/` | Things he can do when you ask in a chat: open apps and sites, notes, flashcards (see its README) |
 | `desktop/inputs/` | Where content comes from: the screen snip and the clipboard |
 | `desktop/mascots/` | One folder per mascot (see its README to add your own) |
 | `docs/` | Roadmap and design notes |
 
 `npm.cmd run smoke-test` starts the app with throwaway settings, walks through the mascots, a snip of a fake worksheet, bubbles (snip, clipboard, chat), History and Settings, saves screenshots, then quits. It's a quick check that nothing is broken. It makes no API calls and doesn't touch your real clipboard, settings or history.
 
-Settings and history are stored in `%APPDATA%\Page Helper`.
+Settings, history and flashcard decks are stored in `%APPDATA%\Page Helper`; notes in `Documents\Page Helper Notes`.
 
 ## Ground rules
 

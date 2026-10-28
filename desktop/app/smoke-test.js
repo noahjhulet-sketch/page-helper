@@ -59,7 +59,7 @@ Heat gives water molecules enough energy to escape into the air as vapor.
 Cooling vapor turns back into tiny droplets, which gather into clouds. See [the USGS water cycle page](https://www.usgs.gov/special-topics/water-science-school).`;
 
 export async function runSmokeTest({
-  mascotWindow, mascots, chooseMascot, setMascotState, snipScreen, useClipboard, newChat, attachTo, showChatBar, openHistoryEntry, openPanel, openBubble, saveEntry, useFakeScreen, useFakeChat,
+  mascotWindow, mascots, chooseMascot, setMascotState, snipScreen, useClipboard, newChat, attachTo, showChatBar, openHistoryEntry, openPanel, openBubble, saveEntry, useFakeScreen, useFakeChat, chatAboutFiles, openNotes, openFlashcards,
 }) {
   const out = process.env.SMOKE_OUT || path.join(app.getPath("userData"), "screenshots");
   fs.mkdirSync(out, { recursive: true });
@@ -174,6 +174,34 @@ export async function runSmokeTest({
   await save(findWindow("bubble.html"), "action-auto.png");
   if (FAKE_ABILITY.runs !== 2) console.log("[smoke] FAIL: the always-allowed action waited for approval");
 
+  // A PDF and a text file dropped into a new chat (a PDF made on the spot).
+  const docs = path.join(app.getPath("temp"), "page-helper-smoke-test", "files");
+  fs.mkdirSync(docs, { recursive: true });
+  const pdf = path.join(docs, "Orbitals reading.pdf");
+  fs.writeFileSync(pdf, await makePdf("<h1>Atomic orbitals</h1><p>s, p, d and f orbitals…</p>"));
+  fs.writeFileSync(path.join(docs, "notes.txt"), "Hund's rule: fill orbitals singly first.");
+  chatAboutFiles([pdf, path.join(docs, "notes.txt"), path.join(docs, "missing.docx")]);
+  await wait(1500);
+  await save(findWindow("bubble.html"), "files-attached.png");
+
+  // He makes a flashcard deck from a chat, and the Flashcards window opens.
+  useFakeChat(scripted([{ text: "Here's a deck on orbitals!", tool: { name: "make_flashcards", input: FAKE_DECK } }, { text: "Done: 4 cards." }]), []);
+  newChat("Make flashcards on orbitals");
+  await wait(2000);
+  const cards = findWindow("flashcards.html");
+  await save(cards, "flashcards.png");
+  await inPage(cards, `document.getElementById("card").click()`);
+  await wait(700);
+  await save(cards, "flashcards-flipped.png");
+
+  // He writes a new note (asks first), and the Notes window opens on it.
+  useFakeChat(scripted([{ text: "Saving it to your notes.", tool: { name: "save_to_notes", input: FAKE_NOTE } }, { text: "Saved!" }]), []);
+  newChat("Start an essay outline on orbitals in my notes");
+  await wait(1200);
+  await inPage(findWindow("bubble.html"), `[...document.querySelectorAll(".action-card button")].find((b) => b.textContent === "Allow").click()`);
+  await wait(1800);
+  await save(findWindow("notes.html"), "notes.png");
+
   // History with a couple of saved sessions.
   for (const [i, entry] of FAKE_HISTORY.entries()) {
     saveEntry({ ...entry, id: `smoke-${i}`, createdAt: Date.now() - i * 3_600_000 });
@@ -218,6 +246,44 @@ function fakeClaude() {
     if (calls === 1) content.push({ type: "tool_use", id: "smoke-1", name: "pretend_note", input: {} });
     return { content, stop_reason: calls === 1 ? "tool_use" : "end_turn" };
   };
+}
+
+const FAKE_DECK = {
+  title: "Atomic orbitals",
+  cards: [
+    { front: "How many electrons fit in one orbital?", back: "Two, with opposite spins (Pauli exclusion principle)." },
+    { front: "Shape of an s orbital", back: "A sphere around the nucleus." },
+    { front: "How many p orbitals per energy level (n ≥ 2)?", back: "Three: px, py and pz." },
+    { front: "Hund's rule", back: "Electrons fill orbitals of equal energy singly before pairing up." },
+  ],
+};
+
+const FAKE_NOTE = {
+  title: "Orbitals essay outline",
+  mode: "new",
+  text: "# Orbitals essay\n\n## Intro\n- What an orbital is (probability, not a path)\n\n## Body\n- s, p, d, f shapes\n- Filling order and Hund's rule\n\n## Conclusion\n- Why it matters for bonding",
+};
+
+// A stand-in for Claude that follows a script: each step says some text and may
+// ask to use one tool.
+function scripted(steps) {
+  let call = 0;
+  return async (_settings, _body, onText) => {
+    const step = steps[Math.min(call++, steps.length - 1)];
+    onText(step.text);
+    const content = [{ type: "text", text: step.text }];
+    if (step.tool) content.push({ type: "tool_use", id: `smoke-${call}`, ...step.tool });
+    return { content, stop_reason: step.tool ? "tool_use" : "end_turn" };
+  };
+}
+
+// A real little PDF, printed from HTML.
+async function makePdf(html) {
+  const win = new BrowserWindow({ show: false });
+  await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+  const data = await win.webContents.printToPDF({});
+  win.destroy();
+  return data;
 }
 
 // Lays screenshots out in a labeled grid and saves that as one image.

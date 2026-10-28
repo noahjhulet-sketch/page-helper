@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'">
+  <title>Page Helper Flashcards</title>
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="flashcards.css">
+</head>
+<body>
+  <header>
+    <select id="deck" aria-label="Deck"></select>
+    <button id="shuffle" class="ghost" title="Shuffle (S)">🔀 Shuffle</button>
+    <button id="delete" class="ghost" title="Delete this deck">🗑</button>
+  </header>
+  <p id="from" class="from"></p>
+
+  <main id="study">
+    <div class="progress"><div id="progress-bar"></div></div>
+    <div class="counter"><span id="counter"></span><span id="known"></span></div>
+
+    <button id="card" class="card" aria-live="polite">
+      <div class="inner">
+        <div class="face front"><span class="side">Question</span><div id="front"></div></div>
+        <div class="face back"><span class="side">Answer</span><div id="back"></div></div>
+      </div>
+    </button>
+    <p class="hint">Click the card or press <kbd>Space</kbd> to flip</p>
+
+    <div class="controls">
+      <button id="prev" class="ghost" title="Previous (←)">←</button>
+      <button id="again" title="Didn't know it (1)">✗ Again</button>
+      <button id="got" class="primary" title="Knew it (2)">✓ Got it</button>
+      <button id="next" class="ghost" title="Next (→)">→</button>
+    </div>
+  </main>
+
+  <section id="done" class="done" hidden>
+    <h2 id="done-title"></h2>
+    <p id="done-text"></p>
+    <div class="row">
+      <button id="review" class="primary">Review the ones I missed</button>
+      <button id="restart">Start over</button>
+    </div>
+  </section>
+
+  <p id="empty" class="empty" hidden>No flashcards yet. In any chat, ask him to "make flashcards on…" and they'll show up here.</p>
+
+  <script src="flashcards.js"></script>
+</body>
+</html>

@@ -1,7 +1,10 @@
 // Bridge between the app's windows and the main process. Pages get only these
 // functions, never Node or Electron directly.
 
-const { contextBridge, ipcRenderer } = require("electron");
+const { contextBridge, ipcRenderer, webUtils } = require("electron");
+
+// Where dropped files are on disk (pages can't see file paths themselves).
+const pathsOf = (files) => [...files].map((file) => webUtils.getPathForFile(file)).filter(Boolean);
 
 contextBridge.exposeInMainWorld("buddy", {
   // Mascot window
@@ -22,6 +25,7 @@ contextBridge.exposeInMainWorld("buddy", {
   barSnip: () => ipcRenderer.send("bar:snip"),
   barClipboard: () => ipcRenderer.send("bar:clipboard"),
   barClose: () => ipcRenderer.send("bar:close"),
+  barFiles: (files) => ipcRenderer.send("bar:files", pathsOf(files)),
   onBarShown: (fn) => ipcRenderer.on("bar:shown", () => fn()),
   onBarClear: (fn) => ipcRenderer.on("bar:clear", () => fn()),
 
@@ -38,6 +42,7 @@ contextBridge.exposeInMainWorld("buddy", {
   chooseTool: (choice) => ipcRenderer.send("bubble:choose", choice),
   askFollowUp: (question) => ipcRenderer.send("bubble:ask", question),
   attach: (how) => ipcRenderer.send("bubble:attach", how),
+  attachFiles: (files) => ipcRenderer.send("bubble:attach-files", pathsOf(files)),
   removePending: (position) => ipcRenderer.send("bubble:remove-pending", position),
   decide: (turn, action, choice) => ipcRenderer.send("bubble:decide", { turn, action, choice }),
   copyAnswer: (index) => ipcRenderer.send("bubble:copy", index),
@@ -50,6 +55,26 @@ contextBridge.exposeInMainWorld("buddy", {
   deleteHistoryEntry: (id) => ipcRenderer.invoke("history:delete", id),
   clearHistory: () => ipcRenderer.invoke("history:clear"),
   onHistoryChanged: (fn) => ipcRenderer.on("history:changed", () => fn()),
+
+  // Flashcards window
+  listDecks: () => ipcRenderer.invoke("decks:list"),
+  getDeck: (id) => ipcRenderer.invoke("decks:get", id),
+  markCard: (id, index, known) => ipcRenderer.invoke("decks:mark", id, index, known),
+  deleteDeck: (id) => ipcRenderer.invoke("decks:delete", id),
+  onDecksChanged: (fn) => ipcRenderer.on("decks:changed", () => fn()),
+
+  // Notes window
+  listNotes: () => ipcRenderer.invoke("notes:list"),
+  readNote: (id) => ipcRenderer.invoke("notes:read", id),
+  currentNote: () => ipcRenderer.invoke("notes:current"),
+  saveNote: (id, text) => ipcRenderer.invoke("notes:save", id, text),
+  createNote: (title) => ipcRenderer.invoke("notes:create", title),
+  renameNote: (id, title) => ipcRenderer.invoke("notes:rename", id, title),
+  deleteNote: (id) => ipcRenderer.invoke("notes:delete", id),
+  renderMarkdown: (text) => ipcRenderer.invoke("notes:render", text),
+  askAboutNote: (id) => ipcRenderer.send("notes:ask", id),
+  showNotesFolder: () => ipcRenderer.send("notes:show-folder"),
+  onNotesChanged: (fn) => ipcRenderer.on("notes:changed", () => fn()),
 
   // Settings window
   getSettings: () => ipcRenderer.invoke("settings:get"),

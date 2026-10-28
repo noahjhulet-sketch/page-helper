@@ -1,6 +1,6 @@
 // Saved sessions, kept only on this PC in the app's data folder:
 //   history/<id>/entry.json      title, answers, copied text
-//   history/<id>/source-<n>.png  each snip or copied image
+//   history/<id>/source-<n>.png  each snip or image (.pdf for PDFs)
 // Only the newest MAX_ENTRIES are kept.
 
 import { app } from "electron";
@@ -15,18 +15,21 @@ const folder = (id) => {
   if (!VALID_ID.test(id)) throw new Error("Invalid history id");
   return path.join(root(), id);
 };
-const imageName = (n, mediaType) => `source-${n}.${mediaType === "image/jpeg" ? "jpg" : "png"}`;
+const EXTENSIONS = { "image/jpeg": "jpg", "image/png": "png", "application/pdf": "pdf" };
+const fileName = (n, mediaType) => `source-${n}.${EXTENSIONS[mediaType] ?? "bin"}`;
 
-// `entry.sources` are { input, thumbnail, preview }; images are written to their own files.
+// `entry.sources` are { input, thumbnail, preview, icon }; images and PDFs are
+// written to their own files.
 export function saveEntry(entry) {
   const dir = folder(entry.id);
   fs.mkdirSync(dir, { recursive: true });
-  const sources = entry.sources.map(({ input, thumbnail, preview }, n) => {
-    if (input.kind !== "image") return { input, thumbnail, preview };
-    const file = imageName(n, input.mediaType);
+  const sources = entry.sources.map(({ input, ...shown }, n) => {
+    if (!input.data) return { input, ...shown };
+    const { data, ...meta } = input;
+    const file = fileName(n, input.mediaType);
     const target = path.join(dir, file);
-    if (!fs.existsSync(target)) fs.writeFileSync(target, Buffer.from(input.data, "base64"));
-    return { input: { kind: "image", mediaType: input.mediaType, file }, thumbnail, preview };
+    if (!fs.existsSync(target)) fs.writeFileSync(target, Buffer.from(data, "base64"));
+    return { input: { ...meta, file }, ...shown };
   });
   fs.writeFileSync(path.join(dir, "entry.json"), JSON.stringify({ ...entry, sources }));
   prune();
@@ -49,10 +52,11 @@ export function listEntries() {
 export function loadEntry(id) {
   const dir = folder(id);
   const entry = upgrade(JSON.parse(fs.readFileSync(path.join(dir, "entry.json"), "utf8")));
-  const sources = entry.sources.map(({ input, thumbnail, preview }) => {
-    if (input.kind !== "image") return { input, thumbnail, preview };
-    const data = fs.readFileSync(path.join(dir, path.basename(input.file))).toString("base64");
-    return { input: { kind: "image", mediaType: input.mediaType, data }, thumbnail, preview };
+  const sources = entry.sources.map(({ input, ...shown }) => {
+    if (!input.file) return { input, ...shown };
+    const { file, ...meta } = input;
+    const data = fs.readFileSync(path.join(dir, path.basename(file))).toString("base64");
+    return { input: { ...meta, data }, ...shown };
   });
   return { ...entry, sources };
 }

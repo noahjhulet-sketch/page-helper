@@ -143,3 +143,6 @@ footer { border-top: 1px solid var(--border); padding: 8px 10px 10px; }
 .action-card.done .action-status { color: #7ee2a8; }
 .action-card.failed .action-status { color: var(--error); }
 .action-buttons { display: flex; gap: 4px; flex: none; }
+
+/* While a file is dragged over the bubble. */
+body.dropping .card { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft), 0 6px 20px rgba(0, 0, 0, 0.45); }

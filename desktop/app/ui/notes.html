@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'">
+  <title>Page Helper Notes</title>
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="notes.css">
+</head>
+<body>
+  <aside>
+    <div class="aside-top">
+      <input id="search" type="search" placeholder="Search notes…" aria-label="Search notes">
+      <button id="new" class="primary" title="New note (Ctrl+N)">＋</button>
+    </div>
+    <ul id="list" class="list"></ul>
+    <button id="folder" class="ghost folder" title="Open the folder in File Explorer">📁 Documents\Page Helper Notes</button>
+  </aside>
+
+  <main id="editor" hidden>
+    <div class="toolbar">
+      <input id="title" class="title" aria-label="Title" spellcheck="false">
+      <button id="preview-toggle" class="ghost" title="Show formatted (Ctrl+E)">👁 Preview</button>
+      <button id="ask" title="Chat with the buddy about this note">💬 Ask about it</button>
+      <button id="delete" class="ghost" title="Move to the Recycle Bin">🗑</button>
+    </div>
+    <textarea id="text" spellcheck="true" placeholder="Start writing… (Markdown works: # headings, - lists, **bold**)"></textarea>
+    <div id="preview" class="preview md" hidden></div>
+    <footer><span id="words"></span><span id="saved" role="status"></span></footer>
+  </main>
+
+  <div id="empty" class="empty" hidden>
+    <p>No notes yet.</p>
+    <p class="hint">Click ＋ to start one, or ask the buddy in a chat to "save this to my notes".</p>
+  </div>
+
+  <script src="notes.js"></script>
+</body>
+</html>
