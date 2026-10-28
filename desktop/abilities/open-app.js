@@ -3,6 +3,7 @@ import { APPS, launch } from "./_apps.js";
 export default {
   name: "open_app",
   icon: "🗂️",
+  permission: "opening apps",
   description:
     "Open an app on the user's computer. Only use this when they ask you to open an app. " +
     "To open Notepad with text in it, use write_note instead.",

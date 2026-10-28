@@ -68,6 +68,11 @@ const sessionApp = {
   actions: [],
   abilities: [],
   abilitiesOn: () => getSetting("allowActions"),
+  isAutoAllowed: (name) => getSetting("autoAllow").includes(name),
+  autoAllow(name) {
+    if (!getSetting("autoAllow").includes(name)) setSettings({ autoAllow: [...getSetting("autoAllow"), name] });
+    sendToPanel("settings", "settings:changed");
+  },
   settings: () => ({ apiKey: getApiKey(), model: getSetting("model") }),
   near: () => getMascotBounds(),
   setMascotState,
@@ -242,6 +247,8 @@ ipcMain.handle("settings:get", () => ({
   hotkeyError: hotkeyErrors.join(" "),
   saveHistory: getSetting("saveHistory"),
   allowActions: getSetting("allowActions"),
+  autoAllow: getSetting("autoAllow"),
+  abilities: sessionApp.abilities.map(({ name, icon, permission }) => ({ name, icon, permission: permission ?? name })),
   hasApiKey: hasApiKey(),
   models: MODELS,
   mascots: listMascots().map(({ id, name, description, images }) => ({ id, name, description, image: images.idle })),
@@ -254,6 +261,10 @@ ipcMain.handle("settings:save", (_e, changes) => {
     if (MODELS.some((m) => m.id === changes.model)) setSettings({ model: changes.model });
     if (typeof changes.saveHistory === "boolean") setSettings({ saveHistory: changes.saveHistory });
     if (typeof changes.allowActions === "boolean") setSettings({ allowActions: changes.allowActions });
+    if (Array.isArray(changes.autoAllow)) {
+      const known = new Set(sessionApp.abilities.map((a) => a.name));
+      setSettings({ autoAllow: changes.autoAllow.filter((name) => known.has(name)) });
+    }
     if (changes.mascot && changes.mascot !== currentMascot()?.id) chooseMascot(changes.mascot);
     return { ok: true };
   } catch (err) {

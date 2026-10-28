@@ -3,6 +3,7 @@ import { clipboard } from "electron";
 export default {
   name: "copy_text",
   icon: "📋",
+  permission: "copying text to your clipboard",
   description:
     "Copy text to the user's clipboard so they can paste it anywhere with Ctrl+V. " +
     "Use this when they ask you to copy something, or to get text ready to paste into another app.",

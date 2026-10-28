@@ -16,9 +16,14 @@ const CHAT_SYSTEM =
   "When they have, base your answers on those first and say when you add outside knowledge. " +
   "If an image is too small or blurry to read, say so instead of guessing.";
 
+const WEB_NOTE =
+  " You can search the web and read pages. When the user wants a source, an article or a file, find a specific, " +
+  "reputable page yourself (not a page of search results), check that it covers what they need, and give them its direct link. ";
+
 const ABILITIES_NOTE =
   " You can also do a few things on the user's computer with your tools: open an app, open a website or a search, " +
   "put text into Notepad, or copy text to the clipboard. Only use them when the user asks you to do something like that. " +
+  "To open a source or file you found, use open_website with its exact link; the browser handles downloads like PDFs. " +
   "The user sees each action and approves or skips it; if they skip one, don't try it again unless they ask. " +
   "You can't click or type inside other apps.";
 
@@ -71,7 +76,7 @@ export class Session {
       onAsk: (q) => this.ask(q),
       onAttach: (how) => this.app.attach(this, how),
       onRemovePending: (i) => this.removePending(i),
-      onDecide: (turn, action, approved) => this.decisions.get(`${turn}:${action}`)?.(approved),
+      onDecide: (turn, action, choice) => this.decisions.get(`${turn}:${action}`)?.(choice),
       onClose: () => this.controller?.abort(),
     });
     if (actionId) this.runTool(actionId, question);
@@ -148,14 +153,19 @@ export class Session {
         {
           max_tokens: 16000,
           output_config: { effort: "medium" },
-          system: abilities.length ? CHAT_SYSTEM + ABILITIES_NOTE : CHAT_SYSTEM,
-          ...(abilities.length && { tools: toolDefinitions(abilities) }),
+          system: CHAT_SYSTEM + WEB_NOTE + (abilities.length ? ABILITIES_NOTE : ""),
+          tools: [...webTools(settings.model), ...toolDefinitions(abilities)],
           messages,
         },
         (text) => onText(join(markdown, text)),
         signal,
       );
       markdown = join(markdown, textOf(message));
+      // A long web search can pause partway; send it back to carry on.
+      if (message.stop_reason === "pause_turn") {
+        messages.push({ role: "assistant", content: message.content });
+        continue;
+      }
       if (message.stop_reason !== "tool_use") {
         if (message.stop_reason === "max_tokens") markdown += "\n\n*(Response was cut off at the length limit.)*";
         return { markdown, actions };
@@ -164,6 +174,7 @@ export class Session {
 
       messages.push({ role: "assistant", content: message.content });
       const results = [];
+      // Only our own tools come back as "tool_use"; web search and reading run on the server.
       for (const use of message.content.filter((b) => b.type === "tool_use")) {
         const { text, isError } = await this.#act(use, abilities, actions, index, signal);
         results.push({ type: "tool_result", tool_use_id: use.id, content: text, is_error: isError });
@@ -174,18 +185,31 @@ export class Session {
     return { markdown: join(markdown, "*(Stopped: that took too many steps.)*"), actions };
   }
 
-  // Shows one requested action, waits for Allow or Skip, and runs it if allowed.
+  // Shows one requested action and runs it once allowed. Kinds of action marked
+  // "Always allow" run straight away; the rest wait for Allow, Always allow or Skip.
   async #act(use, abilities, actions, turnIndex, signal) {
     const ability = abilities.find((a) => a.name === use.name);
     if (!ability) return { text: `There's no tool called ${use.name}.`, isError: true };
 
-    const entry = { icon: ability.icon, label: ability.describe(use.input), status: "waiting", detail: "" };
+    const auto = this.app.isAutoAllowed(ability.name);
+    const entry = {
+      icon: ability.icon,
+      label: ability.describe(use.input),
+      permission: ability.permission ?? ability.name,
+      status: auto ? "running" : "waiting",
+      detail: "",
+    };
     actions.push(entry);
     const show = () => this.bubble.setActions(turnIndex, actions);
     show();
-    this.app.setMascotState("listening");
 
-    const approved = await this.#decision(turnIndex, actions.length - 1, signal);
+    let approved = true;
+    if (!auto) {
+      this.app.setMascotState("listening");
+      const choice = await this.#decision(turnIndex, actions.length - 1, signal);
+      if (choice === "always") this.app.autoAllow(ability.name);
+      approved = choice !== "skip";
+    }
     if (!approved) {
       entry.status = "skipped";
       show();
@@ -207,7 +231,7 @@ export class Session {
     }
   }
 
-  // Resolves true (Allow) or false (Skip); rejects if the bubble is closed meanwhile.
+  // Resolves "allow", "always" or "skip"; rejects if the bubble is closed meanwhile.
   #decision(turnIndex, actionIndex, signal) {
     const key = `${turnIndex}:${actionIndex}`;
     return new Promise((resolve, reject) => {
@@ -217,10 +241,10 @@ export class Session {
       };
       if (signal.aborted) return stop();
       signal.addEventListener("abort", stop, { once: true });
-      this.decisions.set(key, (approved) => {
+      this.decisions.set(key, (choice) => {
         this.decisions.delete(key);
         signal.removeEventListener("abort", stop);
-        resolve(approved);
+        resolve(choice);
       });
     });
   }
@@ -287,4 +311,14 @@ function actionsNote(actions = []) {
   if (!actions.length) return "";
   const lines = actions.map((a) => `- ${a.label}: ${a.status === "done" ? a.detail : a.status}`);
   return `[Actions on the user's computer during this answer]\n${lines.join("\n")}`;
+}
+
+// Web search and page reading, run by Anthropic's servers. Haiku gets the basic
+// search tool; the newer ones (which filter results better) need Opus or Sonnet.
+function webTools(model) {
+  if (model.startsWith("claude-haiku")) return [{ type: "web_search_20250305", name: "web_search", max_uses: 5 }];
+  return [
+    { type: "web_search_20260209", name: "web_search", max_uses: 5 },
+    { type: "web_fetch_20260209", name: "web_fetch", max_uses: 5 },
+  ];
 }

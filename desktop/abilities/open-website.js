@@ -3,7 +3,10 @@ import { shell } from "electron";
 export default {
   name: "open_website",
   icon: "🌐",
-  description: "Open a web page in the user's browser. Only use this when they ask you to open a site or a link.",
+  permission: "opening websites and links",
+  description:
+    "Open a web page or file link (such as a PDF) in the user's browser. Use the exact address of the page you found, " +
+    "not a search results page. Only use this when they ask you to open something, or agree to it.",
   input_schema: {
     type: "object",
     properties: { url: { type: "string", description: "The full address, starting with https://" } },

@@ -28,7 +28,9 @@ The first time, Settings opens so you can paste your Anthropic API key. After th
 
 **Just chat:** hover over the buddy and a chat bar slides out below him. Move down into it, type anything ("make me a study guide for…") and press Enter. In any chat, **✂️** and **📋** attach a snip or whatever you copied to your next question, so you can hand him your sources as you go.
 
-**Ask him to do things:** in a chat, try "open Notepad with a study guide for…", "find me YouTube videos on…", "open Word", or "copy that summary". He shows a card saying exactly what he'll do, with **Allow** and **Skip**, and nothing happens until you click Allow. Turn it off in Settings → Doing things for you.
+**Ask him to do things:** in a chat, try "open Notepad with a study guide for…", "find me YouTube videos on…", "open Word", or "copy that summary". He shows a card saying exactly what he'll do, with **Allow**, **Always** and **Skip**. Nothing happens until you allow it; **Always** stops him asking for that kind of thing (you can undo it in Settings → Doing things for you, where you can also turn the whole feature off).
+
+**Finding sources:** in a chat, ask for something specific ("find me a good source that explains orbitals", "find the PDF of…"). He searches the web, reads the pages, and gives you direct links to the ones that fit. Ask him to open one and he opens that exact page or file. Each search adds a little to the cost of that answer.
 
 Also:
 - **📌 Pin** a bubble to keep it on screen; the next snip opens a new bubble instead of replacing it. Drag bubbles by their top bar.

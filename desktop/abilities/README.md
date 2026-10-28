@@ -2,7 +2,9 @@
 
 Things the buddy can do on the computer when you ask in a chat. Each `.js` file here is one ability, offered to Claude as a tool. Files starting with `_` are helpers.
 
-**He always asks first.** When Claude wants to use one, the chat shows a card describing exactly what will happen, with **Allow** and **Skip**. Nothing runs until you click Allow. The whole feature can be turned off in Settings → Doing things for you.
+**He asks first.** When Claude wants to use one, the chat shows a card describing exactly what will happen, with **Allow**, **Always** and **Skip**. Nothing runs until you allow it. **Always** stops him asking for that ability (its `permission` text names it, as in "Always allow opening apps"); Settings → Doing things for you lists these, lets you undo them, and turns the whole feature off.
+
+Web search and page reading aren't abilities here: they're Anthropic's server tools, added to every chat in `desktop/app/session.js`. They only read; opening what he finds goes through `open_website`.
 
 | File | What it does |
 |---|---|
@@ -18,6 +20,7 @@ Things the buddy can do on the computer when you ask in a chat. Each `.js` file 
 export default {
   name: "open_calendar",              // the tool name Claude sees
   icon: "📅",                         // shown on the approval card
+  permission: "opening Calendar",     // completes "Always allow …"
   description: "Open the Calendar app. Only when the user asks.",  // tells Claude when to use it
   input_schema: { type: "object", properties: {}, additionalProperties: false },
   describe: (input) => "Open Calendar",  // the approval card's text: say exactly what will happen

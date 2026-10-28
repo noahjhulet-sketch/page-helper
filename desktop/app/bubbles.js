@@ -23,11 +23,11 @@ ipcMain.on("bubble:ask", (e, question) => from(e)?.handlers.onAsk?.(question));
 ipcMain.on("bubble:choose", (e, { actionId, question }) => from(e)?.handlers.onChoose?.(actionId, question));
 ipcMain.on("bubble:attach", (e, how) => from(e)?.handlers.onAttach?.(how));
 ipcMain.on("bubble:remove-pending", (e, position) => from(e)?.handlers.onRemovePending?.(position));
-ipcMain.on("bubble:decide", (e, { turn, action, approved }) => from(e)?.handlers.onDecide?.(turn, action, approved));
+ipcMain.on("bubble:decide", (e, { turn, action, choice }) => from(e)?.handlers.onDecide?.(turn, action, choice));
 
 // Opens a bubble, first closing the previous one unless it's pinned.
 // Handlers: onAsk(question), onChoose(actionId, question), onAttach("snip" | "clipboard"),
-// onRemovePending(position), onDecide(turn, action, approved), onClose().
+// onRemovePending(position), onDecide(turn, action, "allow" | "always" | "skip"), onClose().
 export function openBubble(options) {
   if (latest && !latest.state.pinned) latest.close();
   latest = new Bubble(options);

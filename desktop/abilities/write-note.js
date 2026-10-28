@@ -9,6 +9,7 @@ const notesFolder = () => path.join(app.getPath("documents"), "Page Helper Notes
 export default {
   name: "write_note",
   icon: "📝",
+  permission: "putting text in Notepad",
   description:
     "Put text into Notepad for the user: saves it as a .txt file in their Documents\\Page Helper Notes folder and opens it. " +
     "Use this when they ask you to open Notepad with something, paste something into a note, or save something to read later. " +

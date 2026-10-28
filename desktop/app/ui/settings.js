@@ -18,6 +18,20 @@ async function load() {
   $("hotkey-error").hidden = !s.hotkeyError;
   $("save-history").checked = s.saveHistory;
   $("allow-actions").checked = s.allowActions;
+  $("auto-allow").replaceChildren(...s.abilities.map((a) => autoAllowOption(a, s.autoAllow)));
+}
+
+// "Don't ask before opening apps", one per ability.
+function autoAllowOption(ability, autoAllow) {
+  const label = Object.assign(document.createElement("label"), { className: "check" });
+  const input = Object.assign(document.createElement("input"), { type: "checkbox", checked: autoAllow.includes(ability.name) });
+  input.addEventListener("change", () => {
+    const boxes = [...$("auto-allow").querySelectorAll("input")];
+    buddy.saveSettings({ autoAllow: boxes.flatMap((box, i) => (box.checked ? [box.dataset.name] : [])) });
+  });
+  input.dataset.name = ability.name;
+  label.append(input, `${ability.icon} Don't ask before ${ability.permission}`);
+  return label;
 }
 
 function mascotOption(mascot, checked) {

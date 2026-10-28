@@ -11,9 +11,11 @@ const SITES = {
 export default {
   name: "search",
   icon: "🔎",
+  permission: "opening searches",
   description:
-    "Open a search in the user's browser, for example to find videos on YouTube or papers on Google Scholar. " +
-    "Only use this when they ask you to find or look something up for them to browse.",
+    "Open a page of search results in the user's browser, for them to browse themselves. " +
+    "Only use this when they ask for search results (for example \"show me YouTube videos about…\"). " +
+    "When they want a specific source, page or file, find it yourself with web search and open its exact link with open_website instead.",
   input_schema: {
     type: "object",
     properties: {

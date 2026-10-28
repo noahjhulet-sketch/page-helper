@@ -12,7 +12,8 @@ const DEFAULTS = {
   hotkey: "Control+Shift+Space", // snip the screen
   clipboardHotkey: "Control+Alt+Space", // use what's on the clipboard
   saveHistory: true,
-  allowActions: true, // in chats, may open apps and sites, write notes, copy text (asks every time)
+  allowActions: true, // in chats, may open apps and sites, write notes, copy text
+  autoAllow: [], // abilities that no longer ask first ("Always allow")
   position: null, // { x, y } of the mascot window, or null for the default corner
   apiKeyEncrypted: "",
 };

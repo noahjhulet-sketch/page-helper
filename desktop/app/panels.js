@@ -5,7 +5,7 @@ import { BrowserWindow } from "electron";
 import path from "node:path";
 
 const PANELS = {
-  settings: { title: "Page Helper Settings", width: 500, height: 960 },
+  settings: { title: "Page Helper Settings", width: 500, height: 1000 },
   history: { title: "Page Helper History", width: 560, height: 680, resizable: true },
 };
 

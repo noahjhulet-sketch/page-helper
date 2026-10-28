@@ -24,6 +24,9 @@ button.primary { padding: 7px 18px; }
 #status { color: var(--muted); }
 .error { color: var(--error); }
 
+.auto-allow { display: flex; flex-direction: column; gap: 2px; margin-left: 4px; }
+.auto-allow label { margin-bottom: 0; }
+
 .hotkeys { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: center; }
 
 .mascots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }

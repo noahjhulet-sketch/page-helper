@@ -162,10 +162,17 @@ export async function runSmokeTest({
   newChat("Put a water cycle study guide in Notepad");
   await wait(1200);
   await save(findWindow("bubble.html"), "action-waiting.png");
-  await inPage(findWindow("bubble.html"), `[...document.querySelectorAll(".action-card button")].find((b) => b.textContent === "Allow").click()`);
+  await inPage(findWindow("bubble.html"), `[...document.querySelectorAll(".action-card button")].find((b) => b.textContent === "Always").click()`);
   await wait(1200);
   await save(findWindow("bubble.html"), "action-done.png");
-  if (!FAKE_ABILITY.ran) console.log("[smoke] FAIL: the approved action didn't run");
+  if (FAKE_ABILITY.runs !== 1) console.log("[smoke] FAIL: the approved action didn't run");
+
+  // "Always" was clicked, so the same kind of action now runs without asking.
+  useFakeChat(fakeClaude(), []);
+  newChat("Another study guide, please");
+  await wait(1200);
+  await save(findWindow("bubble.html"), "action-auto.png");
+  if (FAKE_ABILITY.runs !== 2) console.log("[smoke] FAIL: the always-allowed action waited for approval");
 
   // History with a couple of saved sessions.
   for (const [i, entry] of FAKE_HISTORY.entries()) {
@@ -189,11 +196,13 @@ export async function runSmokeTest({
 const FAKE_ABILITY = {
   name: "pretend_note",
   icon: "📝",
+  permission: "pretend notes",
   description: "Smoke test only.",
+  runs: 0,
   input_schema: { type: "object", properties: {}, additionalProperties: false },
   describe: () => "Open Notepad with “Water cycle study guide”",
   run() {
-    this.ran = true;
+    this.runs++;
     return "Saved and opened in Notepad.";
   },
 };

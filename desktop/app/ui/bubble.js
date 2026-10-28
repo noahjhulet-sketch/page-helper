@@ -99,8 +99,8 @@ function chips(attachments, className) {
   return row;
 }
 
-// One card per thing he wants to do on the computer. While it's waiting, Allow and
-// Skip buttons; after that, how it went.
+// One card per thing he wants to do on the computer. While it's waiting: Allow,
+// Always allow (stop asking for this kind of thing) and Skip; after that, how it went.
 const ACTION_STATUS = { running: "Working…", done: "Done", skipped: "Skipped", failed: "Didn't work" };
 
 function actionCards(actions, turnIndex) {
@@ -115,11 +115,17 @@ function actionCards(actions, turnIndex) {
     card.append(Object.assign(document.createElement("span"), { className: "action-icon", textContent: action.icon }), text);
 
     if (action.status === "waiting") {
-      const allow = Object.assign(document.createElement("button"), { type: "button", className: "primary", textContent: "Allow" });
-      const skip = Object.assign(document.createElement("button"), { type: "button", textContent: "Skip" });
-      allow.addEventListener("click", () => buddy.decide(turnIndex, actionIndex, true));
-      skip.addEventListener("click", () => buddy.decide(turnIndex, actionIndex, false));
-      card.append(allow, skip);
+      const button = (textContent, choice, className = "") => {
+        const b = Object.assign(document.createElement("button"), { type: "button", textContent, className });
+        b.addEventListener("click", () => buddy.decide(turnIndex, actionIndex, choice));
+        return b;
+      };
+      const allow = button("Allow", "allow", "primary");
+      const always = button("Always", "always");
+      always.title = `Always allow ${action.permission}. Change this in Settings.`;
+      const buttons = Object.assign(document.createElement("div"), { className: "action-buttons" });
+      buttons.append(allow, always, button("Skip", "skip", "ghost"));
+      card.append(buttons);
       requestAnimationFrame(() => allow.focus());
     } else {
       card.append(Object.assign(document.createElement("span"), { className: "action-status", textContent: ACTION_STATUS[action.status] }));

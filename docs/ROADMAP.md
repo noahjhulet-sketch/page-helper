@@ -74,6 +74,8 @@ Built in two steps, simplest and safest first.
 - [x] Put text into Notepad (saved in Documents\Page Helper Notes, then opened)
 - [x] Copy text to the clipboard, ready to paste anywhere
 - [x] On/off switch in Settings; up to 6 actions per answer
+- [x] "Always allow" per kind of action (e.g. opening apps); review or undo in Settings
+- [x] Chats can search the web and read pages to find a specific source or file, then open its exact link
 - [ ] Type an answer into the text box you last clicked (later, with 6b)
 - [ ] **Checkpoint:** try each one in a real chat
 
