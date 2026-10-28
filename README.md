@@ -41,7 +41,8 @@ The first time, Settings opens so you can paste your Anthropic API key. After th
 Also:
 - **📌 Pin** a bubble to keep it on screen; the next snip opens a new bubble instead of replacing it. Drag bubbles by their top bar.
 - **History** (right-click the buddy → History…) lists past snips and answers. Click one to reopen it and keep asking. It's saved only on this PC and can be turned off in Settings.
-- **Drag** the buddy to move it. It remembers where you leave it.
+- **Drag** the buddy to move it. It remembers where you leave it. His home spot is near the top-left of the screen.
+- New windows (bubbles, Notes, Flashcards, History, Settings) open in free space so they don't cover him or each other, opening a little smaller if that's what it takes. Bubbles near the top of the screen grow downward.
 - **Right-click** it, or the purple dot in the taskbar tray, to switch model or mascot, open History or Settings, hide it, or quit.
 - Opus gives the best answers; Haiku is far cheaper.
 

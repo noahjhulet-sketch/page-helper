@@ -3,12 +3,15 @@
 
 import { BrowserWindow, ipcMain, screen } from "electron";
 import path from "node:path";
+import { keepClear } from "./layout.js";
 import { getSetting, setSettings } from "./settings.js";
 
 const SIZE = 140; // larger than any mascot, so animations have room
 const BOTTOM_PAD = 14; // space under the mascot inside the window (matches mascot.css)
-const MARGIN = 24;
-const BAR_ROOM = 56; // the default spot leaves room for the chat bar below him
+// His home spot: near the top-left of the main screen, out of the way but not
+// hugging the corner. (The window's top part is empty room for animations, so
+// he himself sits about 60px further down.)
+const HOME = { x: 48, y: 4 };
 
 let win;
 let dragTimer = null;
@@ -28,6 +31,7 @@ export function createMascotWindow({ onActivate, onMenu, onHover, onDragStart })
   });
   win.setAlwaysOnTop(true, "screen-saver");
   win.setIgnoreMouseEvents(true, { forward: true });
+  keepClear(win); // new windows open around him, not on top of him
   win.loadFile(path.join(import.meta.dirname, "ui", "mascot.html"));
   win.once("ready-to-show", () => win.showInactive());
 
@@ -87,15 +91,9 @@ function startBounds() {
   return saved && isOnScreen(saved) ? { ...saved, width: SIZE, height: SIZE } : defaultBounds();
 }
 
-// Bottom-right corner of the main monitor, above the taskbar.
 function defaultBounds() {
   const { workArea } = screen.getPrimaryDisplay();
-  return {
-    x: workArea.x + workArea.width - SIZE - MARGIN,
-    y: workArea.y + workArea.height - SIZE - MARGIN - BAR_ROOM,
-    width: SIZE,
-    height: SIZE,
-  };
+  return { x: workArea.x + HOME.x, y: workArea.y + HOME.y, width: SIZE, height: SIZE };
 }
 
 function isOnScreen({ x, y }) {

@@ -5,10 +5,12 @@
 import { BrowserWindow, clipboard, ipcMain, screen, shell } from "electron";
 import path from "node:path";
 import { renderMarkdown } from "../../core/markdown.js";
+import { findSpot } from "./layout.js";
 
 const WIDTH = 460;
 const MIN_HEIGHT = 150;
 const MAX_HEIGHT = 640;
+const ROOM = 440; // height kept clear for a new bubble to grow into
 const GAP = 4;
 
 const bubbles = new Map(); // webContents id → Bubble
@@ -54,8 +56,10 @@ class Bubble {
     this.state = { title, thumbnail, preview, menu, pinned: false, busy: false, turns: [], pending: [], notice: "" };
     for (const t of turns) this.state.turns.push(this.#turn(t, t.markdown, "done"));
 
+    const { bounds, growDown } = placement(near);
+    this.growDown = growDown;
     this.win = new BrowserWindow({
-      ...placement(near),
+      ...bounds,
       frame: false,
       transparent: true,
       backgroundColor: "#00000000",
@@ -153,13 +157,15 @@ class Bubble {
     this.send();
   }
 
-  // Fit the window to its content, growing upward so the bottom edge stays put.
+  // Fit the window to its content. Bubbles in the top half of the screen grow
+  // downward (top edge stays put); lower ones grow upward (bottom edge stays put).
   fit(height) {
     if (this.closed) return;
     const b = this.win.getBounds();
-    const { workArea } = screen.getDisplayMatching(b);
-    const h = Math.min(Math.max(Math.ceil(height), MIN_HEIGHT), MAX_HEIGHT, workArea.height);
-    this.win.setBounds({ x: b.x, y: Math.max(workArea.y, b.y + b.height - h), width: WIDTH, height: h });
+    const { workArea: a } = screen.getDisplayMatching(b);
+    const h = Math.min(Math.max(Math.ceil(height), MIN_HEIGHT), MAX_HEIGHT, a.height);
+    const y = this.growDown ? Math.min(b.y, a.y + a.height - h) : Math.max(a.y, b.y + b.height - h);
+    this.win.setBounds({ x: b.x, y, width: WIDTH, height: h });
   }
 
   close() {
@@ -179,12 +185,17 @@ class Bubble {
   }
 }
 
-// Beside the buddy (left if there's room, else right), bottoms aligned.
+// Ideally right beside the buddy (to his right if there's room, else his left),
+// level with him; otherwise the nearest spot that doesn't cover another window.
+// Room is kept for the bubble to grow to a typical answer's height.
 function placement(near) {
   const { workArea: a } = screen.getDisplayMatching(near);
-  let x = near.x - WIDTH - GAP;
-  if (x < a.x) x = near.x + near.width + GAP;
-  x = Math.min(Math.max(a.x, x), a.x + a.width - WIDTH);
-  const y = Math.min(Math.max(a.y, near.y + near.height - MIN_HEIGHT), a.y + a.height - MIN_HEIGHT);
-  return { x, y, width: WIDTH, height: MIN_HEIGHT };
+  let x = near.x + near.width + GAP;
+  if (x + WIDTH > a.x + a.width) x = near.x - WIDTH - GAP;
+  const spot = findSpot({ width: WIDTH, height: ROOM }, { x, y: near.y });
+  const growDown = spot.y + ROOM / 2 < a.y + a.height / 2;
+  return {
+    bounds: { x: spot.x, y: growDown ? spot.y : spot.y + ROOM - MIN_HEIGHT, width: WIDTH, height: MIN_HEIGHT },
+    growDown,
+  };
 }

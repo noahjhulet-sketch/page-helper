@@ -331,6 +331,9 @@ if (!isOnlyCopy) {
   app.whenReady().then(async () => {
     app.setAppUserModelId("com.pagehelper.buddy");
     loadSettings();
+    // His home spot moved to the top-left (layout 2): move him there once. After
+    // that, wherever you drag him is remembered as before.
+    if (getSetting("layout") !== 2) setSettings({ layout: 2, position: null });
     sessionApp.actions = await loadActions();
     sessionApp.abilities = await loadAbilities();
     setAskAboutNote(chatAboutNote);

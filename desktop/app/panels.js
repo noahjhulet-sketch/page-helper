@@ -1,14 +1,17 @@
 // Ordinary app windows with a title bar: Settings, History, Flashcards and Notes. One of each at a
-// time; opening one that's already open brings it to the front.
+// time; opening one that's already open brings it to the front. New ones open in
+// a free spot, so they don't cover the buddy, his bubbles or each other.
 
-import { BrowserWindow } from "electron";
+import { BrowserWindow, screen } from "electron";
 import path from "node:path";
+import { findSpot } from "./layout.js";
 
+// `min`: the smallest a panel may open at to avoid covering other windows.
 const PANELS = {
-  settings: { title: "Page Helper Settings", width: 500, height: 1000 },
-  history: { title: "Page Helper History", width: 560, height: 680, resizable: true },
-  flashcards: { title: "Page Helper Flashcards", width: 600, height: 620, resizable: true },
-  notes: { title: "Page Helper Notes", width: 980, height: 680, resizable: true },
+  settings: { title: "Page Helper Settings", width: 500, height: 1000, min: { width: 500, height: 640 } },
+  history: { title: "Page Helper History", width: 560, height: 680, resizable: true, min: { width: 420, height: 460 } },
+  flashcards: { title: "Page Helper Flashcards", width: 600, height: 620, resizable: true, min: { width: 440, height: 460 } },
+  notes: { title: "Page Helper Notes", width: 980, height: 680, resizable: true, min: { width: 640, height: 460 } },
 };
 
 const open = new Map(); // name → BrowserWindow
@@ -20,11 +23,14 @@ export function openPanel(name) {
     existing.focus();
     return existing;
   }
-  const { title, width, height, resizable = false } = PANELS[name];
+  const { title, width, resizable = false, min } = PANELS[name];
+  // Ideally centered on the screen the pointer is on; never taller than that screen.
+  const { workArea: a } = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+  const height = Math.min(PANELS[name].height, a.height - 20);
+  const spot = findSpot({ width, height }, { x: a.x + (a.width - width) / 2, y: a.y + (a.height - height) / 2 }, min);
   const win = new BrowserWindow({
     title,
-    width,
-    height,
+    ...spot,
     resizable,
     show: false,
     backgroundColor: "#15141c", // matches theme.css, so there's no white flash

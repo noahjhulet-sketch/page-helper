@@ -4,7 +4,7 @@
 // Settings. It makes no API calls and never reads or changes your real clipboard.
 // Screenshots go to the folder in SMOKE_OUT, or a temp folder if it isn't set.
 
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, screen } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -201,6 +201,7 @@ export async function runSmokeTest({
   await inPage(findWindow("bubble.html"), `[...document.querySelectorAll(".action-card button")].find((b) => b.textContent === "Allow").click()`);
   await wait(1800);
   await save(findWindow("notes.html"), "notes.png");
+  await saveLayout(out, "layout-study.png"); // a chat, Flashcards and Notes open together
 
   // History with a couple of saved sessions.
   for (const [i, entry] of FAKE_HISTORY.entries()) {
@@ -217,8 +218,34 @@ export async function runSmokeTest({
   await wait(1500);
   await save(settings, "settings.png");
 
+  // Several windows are open now: check they landed without covering each other.
+  await saveLayout(out, "layout.png");
+
   console.log(`Smoke test screenshots saved to ${out}`);
   app.quit();
+}
+
+// Draws where every visible window is on the main screen, and reports any that overlap.
+async function saveLayout(out, name) {
+  const { workArea: area } = screen.getPrimaryDisplay();
+  const windows = BrowserWindow.getAllWindows()
+    .filter((w) => w.isVisible())
+    .map((w) => ({ name: path.basename(w.webContents.getURL(), ".html"), ...w.getBounds() }));
+  for (const [i, a] of windows.entries()) {
+    for (const b of windows.slice(i + 1)) {
+      const w = Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x);
+      const h = Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y);
+      if (w > 0 && h > 0) console.log(`[smoke] overlap: ${a.name} and ${b.name} (${w}×${h})`);
+    }
+  }
+  const scale = 0.4;
+  const boxes = windows
+    .map((w) => `<div style="position:absolute;left:${(w.x - area.x) * scale}px;top:${(w.y - area.y) * scale}px;width:${w.width * scale}px;height:${w.height * scale}px;border:2px solid #9b82ff;background:rgba(124,92,255,.15);color:#fff;font:11px Segoe UI;padding:2px;box-sizing:border-box">${w.name}</div>`)
+    .join("");
+  const win = new BrowserWindow({ width: Math.round(area.width * scale), height: Math.round(area.height * scale), show: false });
+  await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(`<body style="margin:0;background:#15141c;position:relative">${boxes}</body>`)}`);
+  fs.writeFileSync(path.join(out, name), (await win.webContents.capturePage()).toPNG());
+  win.destroy();
 }
 
 const FAKE_ABILITY = {
