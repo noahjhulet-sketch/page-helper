@@ -1,10 +1,10 @@
 // Desktop buddy entry point: connects the mascot, hotkeys, menus, sessions,
 // history and settings.
 
-import { app, dialog, globalShortcut, ipcMain, Menu, nativeTheme } from "electron";
+import { app, dialog, globalShortcut, ipcMain, Menu, nativeTheme, shell } from "electron";
 import fs from "node:fs";
 import path from "node:path";
-import { MODELS } from "../../core/claude.js";
+import { MODELS, checkApiKey } from "../../core/claude.js";
 import { readClipboard } from "../inputs/clipboard.js";
 import { FILE_TYPES, readFileSource } from "../inputs/files.js";
 import { isSnipping, snip } from "../inputs/snip.js";
@@ -19,7 +19,7 @@ import { listMascots } from "./mascots.js";
 import {
   createMascotWindow, getMascotBounds, getMascotImageBounds, isMascotVisible, sendToMascot, setMascotOpacity, toggleMascot,
 } from "./mascot-window.js";
-import { openPanel, sendToPanel } from "./panels.js";
+import { closePanel, openPanel, sendToPanel } from "./panels.js";
 import { Session } from "./session.js";
 import { getApiKey, getSetting, hasApiKey, loadSettings, setApiKey, setSettings } from "./settings.js";
 import { runSmokeTest } from "./smoke-test.js";
@@ -272,12 +272,21 @@ function buildMenu() {
     },
     { label: isMascotVisible() ? "Hide buddy" : "Show buddy", click: () => showOrHideBuddy() },
     { label: "Settings…", click: () => openPanel("settings") },
+    { label: "Setup guide…", click: () => openPanel("welcome") },
     { type: "separator" },
     { label: "Quit Page Helper", click: () => app.quit() },
   ];
 }
 
 ipcMain.handle("mascot:current", () => currentMascot());
+
+// First-run setup.
+ipcMain.handle("setup:check-key", (_e, key) => checkApiKey(String(key).trim()));
+ipcMain.on("setup:open-key-page", () => shell.openExternal("https://console.anthropic.com/settings/keys"));
+ipcMain.on("setup:finish", () => {
+  setSettings({ setupDone: true });
+  closePanel("welcome");
+});
 
 ipcMain.handle("history:list", () => listEntries());
 ipcMain.on("history:open", (_e, id) => openHistoryEntry(id));
@@ -369,6 +378,7 @@ if (!isOnlyCopy) {
         chatAboutFiles,
         openNotes,
         openFlashcards,
+        closePanel,
         showChatBar,
         openHistoryEntry,
         openPanel,
@@ -377,8 +387,11 @@ if (!isOnlyCopy) {
         useFakeScreen: (capture) => (snipOptions = { capture }),
         useFakeChat: (stream, abilities) => Object.assign(sessionApp, { stream, abilities: [...sessionApp.abilities, ...abilities] }),
       });
-    } else if (!hasApiKey()) {
-      openPanel("settings");
+    } else if (!getSetting("setupDone")) {
+      // First run: walk through setup. People who already had a key from before
+      // the setup window existed are counted as set up.
+      if (hasApiKey()) setSettings({ setupDone: true });
+      else openPanel("welcome");
     }
   });
 }

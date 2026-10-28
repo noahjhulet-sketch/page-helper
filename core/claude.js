@@ -49,6 +49,21 @@ export function textOf(message) {
   return message.content.filter((b) => b.type === "text").map((b) => b.text).join("");
 }
 
+// Checks that a key works by looking up a model (free; no tokens used).
+// Returns { ok: true } or { ok: false, error }.
+export async function checkApiKey(apiKey) {
+  if (!/^sk-ant-/.test(apiKey)) return { ok: false, error: "That doesn't look like an Anthropic API key. They start with sk-ant-." };
+  try {
+    await client(apiKey).models.retrieve(DEFAULT_MODEL);
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof Anthropic.AuthenticationError) {
+      return { ok: false, error: "Anthropic didn't accept that key. Check you copied all of it, and that it hasn't been deleted." };
+    }
+    return { ok: false, error: friendlyError(err).message };
+  }
+}
+
 // Non-streaming call. Returns the full message.
 export async function createMessage({ apiKey, model }, body, signal) {
   try {

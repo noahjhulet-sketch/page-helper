@@ -59,7 +59,7 @@ Heat gives water molecules enough energy to escape into the air as vapor.
 Cooling vapor turns back into tiny droplets, which gather into clouds. See [the USGS water cycle page](https://www.usgs.gov/special-topics/water-science-school).`;
 
 export async function runSmokeTest({
-  mascotWindow, mascots, chooseMascot, setMascotState, snipScreen, useClipboard, newChat, attachTo, showChatBar, openHistoryEntry, openPanel, openBubble, saveEntry, useFakeScreen, useFakeChat, chatAboutFiles, openNotes, openFlashcards,
+  mascotWindow, mascots, chooseMascot, setMascotState, snipScreen, useClipboard, newChat, attachTo, showChatBar, openHistoryEntry, openPanel, openBubble, saveEntry, useFakeScreen, useFakeChat, chatAboutFiles, openNotes, openFlashcards, closePanel,
 }) {
   const out = process.env.SMOKE_OUT || path.join(app.getPath("userData"), "screenshots");
   fs.mkdirSync(out, { recursive: true });
@@ -238,6 +238,25 @@ export async function runSmokeTest({
 
   // Several windows are open now: check they landed without covering each other.
   await saveLayout(out, "layout.png");
+
+  // The first-run setup window, step by step. The key check only tries a key
+  // that's obviously malformed, which is caught before any network call.
+  for (const name of ["settings", "history", "notes", "flashcards", "game"]) closePanel(name);
+  const setup = openPanel("welcome");
+  await wait(1500);
+  await save(setup, "setup-1-welcome.png");
+  await inPage(setup, "show(1); document.getElementById('key').value = 'not-a-key'; document.getElementById('key-form').requestSubmit();");
+  await wait(800);
+  await save(setup, "setup-2-key.png");
+  await inPage(setup, "show(2)");
+  await wait(500);
+  await save(setup, "setup-3-look.png");
+  await inPage(setup, "show(3)");
+  await wait(500);
+  await save(setup, "setup-4-tips.png");
+  await inPage(setup, "document.getElementById('finish').click()");
+  await wait(800);
+  if (findWindow("welcome.html")) console.log("[smoke] FAIL: Start didn't close the setup window");
 
   console.log(`Smoke test screenshots saved to ${out}`);
   app.quit();

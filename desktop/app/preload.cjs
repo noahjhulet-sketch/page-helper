@@ -76,6 +76,11 @@ contextBridge.exposeInMainWorld("buddy", {
   showNotesFolder: () => ipcRenderer.send("notes:show-folder"),
   onNotesChanged: (fn) => ipcRenderer.on("notes:changed", () => fn()),
 
+  // First-run setup window
+  checkApiKey: (key) => ipcRenderer.invoke("setup:check-key", key),
+  openKeyPage: () => ipcRenderer.send("setup:open-key-page"),
+  finishSetup: () => ipcRenderer.send("setup:finish"),
+
   // Settings window
   getSettings: () => ipcRenderer.invoke("settings:get"),
   saveSettings: (changes) => ipcRenderer.invoke("settings:save", changes),

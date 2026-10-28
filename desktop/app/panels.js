@@ -13,6 +13,7 @@ const PANELS = {
   flashcards: { title: "Page Helper Flashcards", width: 600, height: 620, resizable: true, min: { width: 440, height: 460 } },
   notes: { title: "Page Helper Notes", width: 980, height: 680, resizable: true, min: { width: 640, height: 460 } },
   game: { title: "Pop-Up Panic", width: 540, height: 700, min: { width: 540, height: 700 } },
+  welcome: { title: "Welcome to Page Helper", width: 560, height: 700, min: { width: 560, height: 640 } },
 };
 
 const open = new Map(); // name → BrowserWindow
@@ -43,6 +44,10 @@ export function openPanel(name) {
   win.on("closed", () => open.delete(name));
   open.set(name, win);
   return win;
+}
+
+export function closePanel(name) {
+  open.get(name)?.close();
 }
 
 export function sendToPanel(name, channel) {

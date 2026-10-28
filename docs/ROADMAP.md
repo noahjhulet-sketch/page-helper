@@ -4,7 +4,7 @@ Each phase ends with a checkpoint: you try it, then we move on.
 Status: ✅ done · 🔨 in progress · ⏳ next · 💤 later
 
 ## Phase 0: Shared core ✅
-- [x] Project moved out of OneDrive to `C:\Users\jorda\Projects\Page Helper`
+- [x] Project moved out of OneDrive into a plain Projects folder
 - [x] API client, prompts and Markdown renderer pulled out of the old Chrome extension into `core/`
 - [x] Decided to go desktop-only: the extension was removed (still in git history, first commit)
 

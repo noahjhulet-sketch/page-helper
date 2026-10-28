@@ -1,21 +1,34 @@
 # Page Helper
 
-A desktop buddy for Windows: a small mascot that stays on top of your screen. Press a hotkey, drag a box around anything, and Claude can summarize it, explain it, answer blanks, find sources, or answer your question about it.
+A desktop study buddy for Windows: a little mascot who lives on your screen. Snip anything and he'll summarize it, explain it, help with fill-in-the-blanks or find sources. Chat with him, drop in PDFs, make flashcards, keep notes, and have him open apps and pages for you. Powered by Claude, using your own Anthropic API key.
 
-The plan, what's done and the idea backlog are in [docs/ROADMAP.md](docs/ROADMAP.md).
+> **Early version.** It works, but expect rough edges. The plan, what's done and the idea backlog are in [docs/ROADMAP.md](docs/ROADMAP.md).
 
-## Run it
+## Get started
 
-In PowerShell, from this folder:
+**You'll need:** Windows 10 or 11, [Node.js](https://nodejs.org) 20 or newer, and an Anthropic API key (setup walks you through getting one).
 
-```
-npm.cmd install
-npm.cmd start
-```
+1. Download this project (green **Code** button → **Download ZIP**, then unzip it), or `git clone` it.
+2. Open PowerShell in the project folder and run:
 
-(Plain `npm` also works in Command Prompt. PowerShell blocks it by default, so use `npm.cmd` there.)
+   ```
+   npm.cmd install
+   npm.cmd start
+   ```
 
-The first time, Settings opens so you can paste your Anthropic API key. After that the buddy appears in the bottom-right corner.
+   (In Command Prompt, plain `npm` works too. PowerShell blocks plain `npm` by default, which is why it's `npm.cmd` here.)
+3. A setup window walks you through connecting your API key (it checks the key works before saving it), picking a mascot and a model, and a few tips. The buddy then appears near the top-left of your screen.
+
+To reopen setup later: right-click the buddy → **Setup guide…**.
+
+### Costs and privacy
+
+- **You pay Anthropic directly** for what you use. Most answers cost a few cents or less; Haiku is the cheapest model, Opus the best. Setting a monthly spend limit in the [Anthropic Console](https://console.anthropic.com) is a good idea.
+- **Your API key** is encrypted with Windows' own protection and stored only on your PC. It's sent only to Anthropic.
+- **What's sent to Claude** is only what you choose: the box you snip, what you copy, files you attach, notes he reads when you ask, and your messages.
+- **History, notes and flashcards** stay on your PC (see the end of this page for where).
+
+**Academic honesty:** this is meant to help you learn. Check your school's rules before using AI on graded work.
 
 ## Use it
 
