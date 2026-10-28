@@ -1,5 +1,7 @@
 {
   "name": "page-helper",
+  "description": "A desktop study buddy for Windows, powered by Claude",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "scripts": {

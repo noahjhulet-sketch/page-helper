@@ -80,3 +80,7 @@ Settings, history and flashcard decks are stored in `%APPDATA%\Page Helper`; not
 ## Ground rules
 
 For personal use on this PC, not on school-managed devices. Keep academic honesty in mind for graded work.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
