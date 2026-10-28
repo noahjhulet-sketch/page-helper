@@ -3,7 +3,7 @@
 // use the clipboard. It hides shortly after the pointer leaves both the buddy and
 // the bar, unless you've clicked into it.
 
-import { BrowserWindow, ipcMain, screen } from "electron";
+import { app, BrowserWindow, ipcMain, screen } from "electron";
 import path from "node:path";
 
 const WIDTH = 360;
@@ -16,7 +16,8 @@ let anchor = null; // () => the buddy's on-screen bounds
 let watchTimer = null;
 let awaySince = null;
 
-// `getAnchor` returns the bounds of the buddy himself (not his whole window).
+// `getAnchor` returns the bounds of the buddy himself (not his whole window), or
+// null once his window is gone.
 export function createChatBar({ getAnchor, onAsk, onSnip, onClipboard, onFiles }) {
   anchor = getAnchor;
   win = new BrowserWindow({
@@ -53,11 +54,12 @@ export function createChatBar({ getAnchor, onAsk, onSnip, onClipboard, onFiles }
     hideChatBar();
     onFiles(paths);
   }));
+  app.on("before-quit", () => clearInterval(watchTimer));
   return win;
 }
 
 export function showChatBar() {
-  if (!win || win.isVisible()) return;
+  if (!win || win.isDestroyed() || win.isVisible() || !anchor()) return;
   win.setBounds({ ...placement(), width: WIDTH, height: HEIGHT });
   win.showInactive();
   win.webContents.send("bar:shown");
@@ -66,7 +68,7 @@ export function showChatBar() {
 
 export function hideChatBar({ clear = false } = {}) {
   clearInterval(watchTimer);
-  if (!win?.isVisible()) return;
+  if (!win || win.isDestroyed() || !win.isVisible()) return;
   win.hide();
   if (clear) win.webContents.send("bar:clear");
 }
@@ -88,6 +90,8 @@ function watchPointer() {
   clearInterval(watchTimer);
   awaySince = null;
   watchTimer = setInterval(() => {
+    // The app is quitting and its windows are already gone.
+    if (!win || win.isDestroyed() || !anchor()) return clearInterval(watchTimer);
     const p = screen.getCursorScreenPoint();
     const near = win.isFocused() || inside(p, win.getBounds()) || inside(p, grow(anchor(), 10));
     if (near) awaySince = null;

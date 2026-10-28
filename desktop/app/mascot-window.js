@@ -60,8 +60,9 @@ export function getMascotBounds() {
 }
 
 // Where the mascot himself is on screen: a `size`-pixel square at the bottom
-// center of his window.
+// center of his window. Null once the window is gone (the app is quitting).
 export function getMascotImageBounds(size) {
+  if (!win || win.isDestroyed()) return null;
   const b = win.getBounds();
   return { x: b.x + Math.round((SIZE - size) / 2), y: b.y + SIZE - BOTTOM_PAD - size, width: size, height: size };
 }
