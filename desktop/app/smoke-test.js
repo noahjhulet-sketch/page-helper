@@ -46,17 +46,21 @@ const FAKE_HISTORY = [
 
 const SAMPLE_ANSWER = `**1.** Water turning into vapor because of heat is called ____.
 
-→ **evaporation** · high confidence
+:::reveal Answer
+**evaporation** · high confidence
 
 Heat gives water molecules enough energy to escape into the air as vapor.
+:::
 
 ---
 
 **2.** Clouds form when water vapor cools and goes through ____.
 
-→ **condensation** · high confidence
+:::reveal Answer
+**condensation** · high confidence
 
-Cooling vapor turns back into tiny droplets, which gather into clouds. See [the USGS water cycle page](https://www.usgs.gov/special-topics/water-science-school).`;
+Cooling vapor turns back into tiny droplets, which gather into clouds. See [the USGS water cycle page](https://www.usgs.gov/special-topics/water-science-school).
+:::`;
 
 export async function runSmokeTest({
   mascotWindow, mascots, chooseMascot, setMascotState, snipScreen, useClipboard, newChat, attachTo, showChatBar, openHistoryEntry, openPanel, openBubble, saveEntry, useFakeScreen, useFakeChat, chatAboutFiles, openNotes, openFlashcards, closePanel,
@@ -155,6 +159,19 @@ export async function runSmokeTest({
   chat.togglePin();
   await wait(1200);
   await save(chat.win, "bubble-chat.png");
+
+  // Blanks answers start hidden; the second one opened should stay open when the bubble updates.
+  if (!(await inPage(chat.win, `document.querySelectorAll("details.reveal[open]").length === 0`))) {
+    console.log("[smoke] FAIL: Blanks answers weren't hidden");
+  }
+  await inPage(chat.win, `document.querySelectorAll("details.reveal summary")[1].click()`);
+  chat.togglePin(); // any update redraws the chat; toggled twice so it stays pinned
+  chat.togglePin();
+  await wait(800);
+  if (!(await inPage(chat.win, `document.querySelectorAll("details.reveal")[1].open`))) {
+    console.log("[smoke] FAIL: an opened answer closed again when the bubble updated");
+  }
+  await save(chat.win, "bubble-blanks-answer.png");
 
   // A chat where he asks to do something on the computer. A scripted stand-in for
   // Claude and a harmless pretend ability, so nothing real is opened or written.

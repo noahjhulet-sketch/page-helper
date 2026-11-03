@@ -47,8 +47,9 @@ export default {
 
     const { answers } = JSON.parse(textOf(message) || '{"answers":[]}');
     if (!answers.length) return "I didn't find any fill-in-the-blank questions there.";
+    // Each answer stays hidden behind an Answer button, so you can try it first.
     return answers
-      .map((a, i) => `**${i + 1}.** ${a.question}\n\n→ **${a.answer}** · ${a.confidence} confidence\n\n${a.explanation}`)
+      .map((a, i) => `**${i + 1}.** ${a.question}\n\n:::reveal Answer\n**${a.answer}** · ${a.confidence} confidence\n\n${a.explanation}\n:::`)
       .join("\n\n---\n\n");
   },
 };

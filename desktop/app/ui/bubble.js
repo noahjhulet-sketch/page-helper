@@ -47,6 +47,8 @@ buddy.onBubble((state) => {
 function renderChat(turns) {
   const chat = $("chat");
   const atBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 24;
+  // The chat is rebuilt on every update; remember which hidden answers were opened.
+  const opened = new Set([...chat.querySelectorAll("details.reveal[open]")].map((d) => d.dataset.key));
 
   chat.replaceChildren(
     ...turns.flatMap((turn, i) => {
@@ -62,6 +64,10 @@ function renderChat(turns) {
         const body = document.createElement("div");
         body.className = "md";
         body.innerHTML = turn.html;
+        body.querySelectorAll("details.reveal").forEach((d, n) => {
+          d.dataset.key = `${i}-${n}`;
+          d.open = opened.has(d.dataset.key);
+        });
         answer.append(body);
         if (turn.actions.length) answer.append(actionCards(turn.actions, i));
         if (STATUS[turn.status]) answer.append(Object.assign(document.createElement("div"), { className: "status", textContent: STATUS[turn.status] }));
@@ -170,6 +176,9 @@ $("follow-up").addEventListener("submit", (e) => {
   refocus = true;
   buddy.askFollowUp(question);
 });
+
+// Opening a hidden answer makes the chat taller; grow the bubble to fit.
+$("chat").addEventListener("toggle", () => requestAnimationFrame(reportHeight), true);
 
 $("attach-snip").addEventListener("click", () => buddy.attach("snip"));
 $("attach-clipboard").addEventListener("click", () => buddy.attach("clipboard"));

@@ -65,6 +65,8 @@ Your ideas: look over PDFs, flashcards from a chat, and a notes app.
 - [x] Expressions for all three mascots: idle (blinks), hover (happy), listening (wide eyes), selecting (looks down), thinking (eyes up, "…" bubble), talking (mouth moves), error (worried, sweat drop), sleeping (eyes closed, Zzz, after 3 minutes idle), dragged (surprised)
 - [x] **Checkpoint** passed (animations)
 - Wording that matches the chattiness level
+- [x] Blanks hides each answer behind an **Answer** button (shows the answer and why it's right)
+- [ ] **Checkpoint:** try Blanks on `docs/practice/blanks-worksheet.html` and compare with its answer key
 - Study mode for Blanks: hint, then explanation, then answer
 - "Graded work" toggle: Blanks becomes explain-only
 

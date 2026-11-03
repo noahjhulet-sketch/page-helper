@@ -4,7 +4,7 @@
 
 import { BrowserWindow, clipboard, ipcMain, screen, shell } from "electron";
 import path from "node:path";
-import { renderMarkdown } from "../../core/markdown.js";
+import { renderMarkdown, withoutReveals } from "../../core/markdown.js";
 import { findSpot } from "./layout.js";
 
 const WIDTH = 460;
@@ -149,7 +149,7 @@ class Bubble {
   }
 
   copy(index) {
-    clipboard.writeText(this.state.turns[index]?.markdown ?? "");
+    clipboard.writeText(withoutReveals(this.state.turns[index]?.markdown ?? ""));
   }
 
   togglePin() {

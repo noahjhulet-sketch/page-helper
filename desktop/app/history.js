@@ -6,6 +6,7 @@
 import { app } from "electron";
 import fs from "node:fs";
 import path from "node:path";
+import { withoutReveals } from "../../core/markdown.js";
 
 const MAX_ENTRIES = 100;
 const VALID_ID = /^[\w-]+$/;
@@ -101,7 +102,7 @@ function prune() {
 }
 
 function plainText(markdown) {
-  return markdown
+  return withoutReveals(markdown)
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
     .replace(/[*_`#>→]|^-{3,}$/gm, "")
     .replace(/\s+/g, " ")
